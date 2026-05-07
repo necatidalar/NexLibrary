@@ -1,4 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using NexLibrary.Application.Interfaces.Services;
+using NexLibrary.Application.Services;
 
 namespace NexLibrary.Application;
 
@@ -6,7 +8,9 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddApplication(this IServiceCollection services)
     {
-        // Servis implementasyonları sonraki adımda buraya eklenecek.
+        services.AddScoped<IBookService, BookService>();
+        services.AddScoped<IFormFieldService, FormFieldService>();
+
         return services;
     }
 }
