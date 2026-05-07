@@ -52,5 +52,6 @@ internal static class Program
 
         services.AddTransient<FrmMain>();
         services.AddTransient<FrmBooks>();
+        services.AddTransient<FrmFormFields>();
     }
 }

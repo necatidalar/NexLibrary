@@ -42,4 +42,51 @@ public sealed class FormFieldApiService
 
         return response.Veri;
     }
+
+    public async Task<FormFieldResponse?> CreateAsync(
+        FormFieldCreateRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        var response = await _apiClient.PostAsync<FormFieldResponse>(
+            "api/form-fields",
+            request,
+            cancellationToken);
+
+        if (response is null || !response.BasariliMi)
+        {
+            return null;
+        }
+
+        return response.Veri;
+    }
+
+    public async Task<FormFieldResponse?> UpdateAsync(
+        int id,
+        FormFieldUpdateRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        var response = await _apiClient.PutAsync<FormFieldResponse>(
+            $"api/form-fields/{id}",
+            request,
+            cancellationToken);
+
+        if (response is null || !response.BasariliMi)
+        {
+            return null;
+        }
+
+        return response.Veri;
+    }
+
+    public async Task<bool> SetActiveAsync(
+        int id,
+        bool aktifMi,
+        CancellationToken cancellationToken = default)
+    {
+        var response = await _apiClient.PatchAsync<bool>(
+            $"api/form-fields/{id}/active?aktifMi={aktifMi.ToString().ToLowerInvariant()}",
+            cancellationToken);
+
+        return response is not null && response.BasariliMi && response.Veri;
+    }
 }

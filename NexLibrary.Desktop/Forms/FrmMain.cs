@@ -25,6 +25,12 @@ public partial class FrmMain : Form
         OpenChildForm(form);
     }
 
+    private void btnFormFields_Click(object sender, EventArgs e)
+    {
+        var form = _serviceProvider.GetRequiredService<FrmFormFields>();
+        OpenChildForm(form);
+    }
+
     private void OpenChildForm(Form childForm)
     {
         _activeForm?.Close();

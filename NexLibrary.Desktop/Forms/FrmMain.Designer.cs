@@ -9,6 +9,7 @@ partial class FrmMain
     private Label lblTitle;
     private Label lblStatus;
     private Button btnBooks;
+    private Button btnFormFields;
 
     protected override void Dispose(bool disposing)
     {
@@ -24,6 +25,7 @@ partial class FrmMain
     {
         pnlSidebar = new Panel();
         btnBooks = new Button();
+        btnFormFields = new Button();
         pnlHeader = new Panel();
         lblTitle = new Label();
         lblStatus = new Label();
@@ -35,6 +37,7 @@ partial class FrmMain
 
         pnlSidebar.BackColor = Color.FromArgb(35, 45, 60);
         pnlSidebar.Controls.Add(btnBooks);
+        pnlSidebar.Controls.Add(btnFormFields);
         pnlSidebar.Dock = DockStyle.Left;
         pnlSidebar.Location = new Point(0, 0);
         pnlSidebar.Name = "pnlSidebar";
@@ -53,6 +56,19 @@ partial class FrmMain
         btnBooks.Text = "Kitaplar";
         btnBooks.UseVisualStyleBackColor = false;
         btnBooks.Click += btnBooks_Click;
+
+        btnFormFields.BackColor = Color.FromArgb(52, 73, 94);
+        btnFormFields.FlatAppearance.BorderSize = 0;
+        btnFormFields.FlatStyle = FlatStyle.Flat;
+        btnFormFields.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+        btnFormFields.ForeColor = Color.White;
+        btnFormFields.Location = new Point(15, 135);
+        btnFormFields.Name = "btnFormFields";
+        btnFormFields.Size = new Size(190, 45);
+        btnFormFields.TabIndex = 1;
+        btnFormFields.Text = "Form Alanları";
+        btnFormFields.UseVisualStyleBackColor = false;
+        btnFormFields.Click += btnFormFields_Click;
 
         pnlHeader.BackColor = Color.White;
         pnlHeader.Controls.Add(lblStatus);
