@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using NexLibrary.Desktop.Forms;
 using NexLibrary.Desktop.Options;
 using NexLibrary.Desktop.Services;
 
@@ -18,7 +19,7 @@ internal static class Program
 
         using var serviceProvider = services.BuildServiceProvider();
 
-        var mainForm = serviceProvider.GetRequiredService<Form1>();
+        var mainForm = serviceProvider.GetRequiredService<FrmMain>();
 
         Application.Run(mainForm);
     }
@@ -49,6 +50,7 @@ internal static class Program
         services.AddScoped<FormFieldApiService>();
         services.AddScoped<BookApiService>();
 
-        services.AddTransient<Form1>();
+        services.AddTransient<FrmMain>();
+        services.AddTransient<FrmBooks>();
     }
 }
