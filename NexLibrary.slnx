@@ -1,1 +1,8 @@
-<Solution />
+<Solution>
+  <Project Path="NexLibrary.Api/NexLibrary.Api.csproj" />
+  <Project Path="NexLibrary.Application/NexLibrary.Application.csproj" />
+  <Project Path="NexLibrary.Contracts/NexLibrary.Contracts.csproj" />
+  <Project Path="NexLibrary.Desktop/NexLibrary.Desktop.csproj" />
+  <Project Path="NexLibrary.Domain/NexLibrary.Domain.csproj" />
+  <Project Path="NexLibrary.Infrastructure/NexLibrary.Infrastructure.csproj" />
+</Solution>
