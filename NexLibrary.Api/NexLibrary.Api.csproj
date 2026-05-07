@@ -15,10 +15,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Controllers\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\NexLibrary.Application\NexLibrary.Application.csproj" />
     <ProjectReference Include="..\NexLibrary.Contracts\NexLibrary.Contracts.csproj" />
     <ProjectReference Include="..\NexLibrary.Infrastructure\NexLibrary.Infrastructure.csproj" />
