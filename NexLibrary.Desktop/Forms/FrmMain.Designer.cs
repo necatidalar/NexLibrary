@@ -10,6 +10,7 @@ partial class FrmMain
     private Label lblStatus;
     private Button btnBooks;
     private Button btnFormFields;
+    private Button btnListSettings;
 
     protected override void Dispose(bool disposing)
     {
@@ -26,6 +27,7 @@ partial class FrmMain
         pnlSidebar = new Panel();
         btnBooks = new Button();
         btnFormFields = new Button();
+        btnListSettings = new Button();
         pnlHeader = new Panel();
         lblTitle = new Label();
         lblStatus = new Label();
@@ -38,6 +40,7 @@ partial class FrmMain
         pnlSidebar.BackColor = Color.FromArgb(35, 45, 60);
         pnlSidebar.Controls.Add(btnBooks);
         pnlSidebar.Controls.Add(btnFormFields);
+        pnlSidebar.Controls.Add(btnListSettings);
         pnlSidebar.Dock = DockStyle.Left;
         pnlSidebar.Location = new Point(0, 0);
         pnlSidebar.Name = "pnlSidebar";
@@ -69,6 +72,19 @@ partial class FrmMain
         btnFormFields.Text = "Form Alanları";
         btnFormFields.UseVisualStyleBackColor = false;
         btnFormFields.Click += btnFormFields_Click;
+
+        btnListSettings.BackColor = Color.FromArgb(52, 73, 94);
+        btnListSettings.FlatAppearance.BorderSize = 0;
+        btnListSettings.FlatStyle = FlatStyle.Flat;
+        btnListSettings.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+        btnListSettings.ForeColor = Color.White;
+        btnListSettings.Location = new Point(15, 190);
+        btnListSettings.Name = "btnListSettings";
+        btnListSettings.Size = new Size(190, 45);
+        btnListSettings.TabIndex = 2;
+        btnListSettings.Text = "Liste Ayarları";
+        btnListSettings.UseVisualStyleBackColor = false;
+        btnListSettings.Click += btnListSettings_Click;
 
         pnlHeader.BackColor = Color.White;
         pnlHeader.Controls.Add(lblStatus);
