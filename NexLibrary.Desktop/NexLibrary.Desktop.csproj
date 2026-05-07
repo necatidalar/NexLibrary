@@ -8,4 +8,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\NexLibrary.Contracts\NexLibrary.Contracts.csproj" />
+  </ItemGroup>
+
 </Project>

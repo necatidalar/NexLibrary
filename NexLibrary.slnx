@@ -5,4 +5,5 @@
   <Project Path="NexLibrary.Desktop/NexLibrary.Desktop.csproj" />
   <Project Path="NexLibrary.Domain/NexLibrary.Domain.csproj" />
   <Project Path="NexLibrary.Infrastructure/NexLibrary.Infrastructure.csproj" />
+  <Project Path="NexLibrary.Web/NexLibrary.Web.csproj" Id="398da93e-fb92-439f-b6b1-fb23e1416fa0" />
 </Solution>

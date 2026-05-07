@@ -6,4 +6,10 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\NexLibrary.Application\NexLibrary.Application.csproj" />
+    <ProjectReference Include="..\NexLibrary.Contracts\NexLibrary.Contracts.csproj" />
+    <ProjectReference Include="..\NexLibrary.Domain\NexLibrary.Domain.csproj" />
+  </ItemGroup>
+
 </Project>
