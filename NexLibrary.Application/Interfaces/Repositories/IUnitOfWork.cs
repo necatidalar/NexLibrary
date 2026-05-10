@@ -18,6 +18,8 @@ public interface IUnitOfWork : IDisposable
 
     IGenericRepository<AuditLog> AuditLoglari { get; }
 
+    IGenericRepository<Uye> Uyeler { get; }
+
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 
     Task ExecuteInTransactionAsync(

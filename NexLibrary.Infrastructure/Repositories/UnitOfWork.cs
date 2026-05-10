@@ -8,6 +8,7 @@ public sealed class UnitOfWork : IUnitOfWork
 {
     private readonly NexLibraryDbContext _context;
 
+    public IGenericRepository<Uye> Uyeler { get; }
     public UnitOfWork(NexLibraryDbContext context)
     {
         _context = context;
@@ -19,6 +20,7 @@ public sealed class UnitOfWork : IUnitOfWork
         Roller = new GenericRepository<Rol>(_context);
         KullaniciRolleri = new GenericRepository<KullaniciRol>(_context);
         AuditLoglari = new GenericRepository<AuditLog>(_context);
+        Uyeler = new GenericRepository<Uye>(_context);
     }
 
     public IGenericRepository<Kitap> Kitaplar { get; }

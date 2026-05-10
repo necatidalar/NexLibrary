@@ -10,6 +10,7 @@ public static class DependencyInjection
     {
         services.AddScoped<IBookService, BookService>();
         services.AddScoped<IFormFieldService, FormFieldService>();
+        services.AddScoped<IMemberService, MemberService>();
 
         return services;
     }

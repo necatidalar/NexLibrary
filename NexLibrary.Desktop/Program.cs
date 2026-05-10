@@ -49,10 +49,13 @@ internal static class Program
 
         services.AddScoped<FormFieldApiService>();
         services.AddScoped<BookApiService>();
+        services.AddScoped<MemberApiService>();
 
         services.AddTransient<FrmMain>();
         services.AddTransient<FrmBooks>();
         services.AddTransient<FrmFormFields>();
         services.AddTransient<FrmListSettings>();
+        services.AddTransient<FrmMembers>();
+        services.AddTransient<FrmMemberEdit>();
     }
 }

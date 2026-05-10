@@ -19,6 +19,12 @@ public partial class FrmMain : Form
         lblStatus.Text = "NexLibrary hazır.";
     }
 
+    private void btnMembers_Click(object sender, EventArgs e)
+    {
+        var form = _serviceProvider.GetRequiredService<FrmMembers>();
+        OpenChildForm(form);
+    }
+
     private void btnBooks_Click(object sender, EventArgs e)
     {
         var form = _serviceProvider.GetRequiredService<FrmBooks>();

@@ -11,6 +11,7 @@ partial class FrmMain
     private Button btnBooks;
     private Button btnFormFields;
     private Button btnListSettings;
+    private Button btnMembers;
 
     protected override void Dispose(bool disposing)
     {
@@ -28,6 +29,7 @@ partial class FrmMain
         btnBooks = new Button();
         btnFormFields = new Button();
         btnListSettings = new Button();
+        btnMembers = new Button();
         pnlHeader = new Panel();
         lblTitle = new Label();
         lblStatus = new Label();
@@ -41,6 +43,7 @@ partial class FrmMain
         pnlSidebar.Controls.Add(btnBooks);
         pnlSidebar.Controls.Add(btnFormFields);
         pnlSidebar.Controls.Add(btnListSettings);
+        pnlSidebar.Controls.Add(btnMembers);
         pnlSidebar.Dock = DockStyle.Left;
         pnlSidebar.Location = new Point(0, 0);
         pnlSidebar.Name = "pnlSidebar";
@@ -59,6 +62,19 @@ partial class FrmMain
         btnBooks.Text = "Kitaplar";
         btnBooks.UseVisualStyleBackColor = false;
         btnBooks.Click += btnBooks_Click;
+
+        btnMembers.BackColor = Color.FromArgb(52, 73, 94);
+        btnMembers.FlatAppearance.BorderSize = 0;
+        btnMembers.FlatStyle = FlatStyle.Flat;
+        btnMembers.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+        btnMembers.ForeColor = Color.White;
+        btnMembers.Location = new Point(15, 245);
+        btnMembers.Name = "btnMembers";
+        btnMembers.Size = new Size(190, 45);
+        btnMembers.TabIndex = 3;
+        btnMembers.Text = "Üyeler";
+        btnMembers.UseVisualStyleBackColor = false;
+        btnMembers.Click += btnMembers_Click;
 
         btnFormFields.BackColor = Color.FromArgb(52, 73, 94);
         btnFormFields.FlatAppearance.BorderSize = 0;
