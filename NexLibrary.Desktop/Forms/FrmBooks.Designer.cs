@@ -10,6 +10,7 @@ partial class FrmBooks
     private Button btnAdd;
     private Button btnEdit;
     private Button btnDelete;
+    private Button btnDetail;
     private DataGridView dgvBooks;
     private Label lblTitle;
     private Label lblCount;
@@ -33,6 +34,7 @@ partial class FrmBooks
         btnAdd = new Button();
         btnRefresh = new Button();
         btnSearch = new Button();
+        btnDetail = new Button();
         txtSearch = new TextBox();
         lblTitle = new Label();
         dgvBooks = new DataGridView();
@@ -50,6 +52,7 @@ partial class FrmBooks
         pnlTop.Controls.Add(btnSearch);
         pnlTop.Controls.Add(txtSearch);
         pnlTop.Controls.Add(lblTitle);
+        pnlTop.Controls.Add(btnDetail);
         pnlTop.Dock = DockStyle.Top;
         pnlTop.Location = new Point(0, 0);
         pnlTop.Name = "pnlTop";
@@ -114,6 +117,15 @@ partial class FrmBooks
         btnDelete.Text = "Pasif Yap";
         btnDelete.UseVisualStyleBackColor = true;
         btnDelete.Click += btnDelete_Click;
+
+        btnDetail.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+        btnDetail.Location = new Point(550, 63);
+        btnDetail.Name = "btnDetail";
+        btnDetail.Size = new Size(95, 30);
+        btnDetail.TabIndex = 4;
+        btnDetail.Text = "Detay";
+        btnDetail.UseVisualStyleBackColor = true;
+        btnDetail.Click += btnDetail_Click;
 
         lblCount.Anchor = AnchorStyles.Top | AnchorStyles.Right;
         lblCount.Font = new Font("Segoe UI", 9F);

@@ -20,10 +20,10 @@ public sealed class BookService : IBookService
     }
 
     public async Task<ApiResponse<PagedResponse<BookListResponse>>> GetPagedAsync(
-        int pageNumber = 1,
-        int pageSize = 20,
-        string? search = null,
-        CancellationToken cancellationToken = default)
+    int pageNumber = 1,
+    int pageSize = 20,
+    string? search = null,
+    CancellationToken cancellationToken = default)
     {
         pageNumber = pageNumber <= 0 ? 1 : pageNumber;
         pageSize = pageSize <= 0 ? 20 : pageSize;
@@ -34,7 +34,28 @@ public sealed class BookService : IBookService
 
         if (!string.IsNullOrWhiteSpace(search))
         {
-            query = query.Where(x => x.KitapAdi.Contains(search));
+            var searchText = search.Trim();
+
+            var dynamicMatchedBookIds = await _unitOfWork.DinamikAlanDegerleri
+                .Query()
+                .AsNoTracking()
+                .Include(x => x.FormAlani)
+                .Where(x =>
+                    x.ModulKodu == ModulKodu.Kitaplar &&
+                    x.AktifMi &&
+                    x.FormAlani.AktifMi &&
+                    x.FormAlani.AramadaGorunsunMu &&
+                    (
+                        (x.DegerMetin != null && x.DegerMetin.Contains(searchText)) ||
+                        (x.DegerJson != null && x.DegerJson.Contains(searchText))
+                    ))
+                .Select(x => x.KayitId)
+                .Distinct()
+                .ToListAsync(cancellationToken);
+
+            query = query.Where(x =>
+                x.KitapAdi.Contains(searchText) ||
+                dynamicMatchedBookIds.Contains(x.Id));
         }
 
         var totalCount = await query.CountAsync(cancellationToken);

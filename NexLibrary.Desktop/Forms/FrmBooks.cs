@@ -128,6 +128,27 @@ public partial class FrmBooks : Form
         lblCount.Text = $"Toplam kayıt: {_books.Count}";
     }
 
+    private void OpenDetailForm()
+    {
+        if (_selectedBookId <= 0)
+        {
+            MessageBox.Show(
+                "Lütfen detayını görmek istediğiniz kitabı seçin.",
+                "NexLibrary",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Warning);
+            return;
+        }
+
+        using var form = new FrmBookDetail(_bookApiService, _selectedBookId);
+        form.ShowDialog(this);
+    }
+
+    private void btnDetail_Click(object sender, EventArgs e)
+    {
+        OpenDetailForm();
+    }
+
     private async void btnRefresh_Click(object sender, EventArgs e)
     {
         await LoadBooksAsync();
@@ -234,7 +255,7 @@ public partial class FrmBooks : Form
     {
         if (e.RowIndex >= 0)
         {
-            btnEdit.PerformClick();
+            OpenDetailForm();
         }
     }
 }
