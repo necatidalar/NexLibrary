@@ -21,6 +21,12 @@ builder.Services.AddHttpClient<DashboardApiService>(client =>
     client.Timeout = TimeSpan.FromSeconds(30);
 });
 
+builder.Services.AddHttpClient<BookApiService>(client =>
+{
+    client.BaseAddress = new Uri(apiSettings.BaseUrl.TrimEnd('/') + "/");
+    client.Timeout = TimeSpan.FromSeconds(30);
+});
+
 var app = builder.Build();
 
 if (!app.Environment.IsDevelopment())
