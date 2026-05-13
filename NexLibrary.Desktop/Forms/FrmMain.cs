@@ -17,11 +17,20 @@ public partial class FrmMain : Form
     private void FrmMain_Load(object sender, EventArgs e)
     {
         lblStatus.Text = "NexLibrary hazır.";
+
+        var form = _serviceProvider.GetRequiredService<FrmDashboard>();
+        OpenChildForm(form);
     }
 
     private void btnMembers_Click(object sender, EventArgs e)
     {
         var form = _serviceProvider.GetRequiredService<FrmMembers>();
+        OpenChildForm(form);
+    }
+
+    private void btnDashboard_Click(object sender, EventArgs e)
+    {
+        var form = _serviceProvider.GetRequiredService<FrmDashboard>();
         OpenChildForm(form);
     }
 

@@ -52,7 +52,9 @@ internal static class Program
         services.AddScoped<MemberApiService>();
         services.AddScoped<LoanApiService>();
         services.AddScoped<BookCopyApiService>();
+        services.AddScoped<DashboardApiService>();
 
+        services.AddTransient<FrmDashboard>();
         services.AddTransient<FrmMain>();
         services.AddTransient<FrmBooks>();
         services.AddTransient<FrmMembers>();

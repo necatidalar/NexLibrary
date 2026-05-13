@@ -14,6 +14,7 @@ partial class FrmMain
     private Button btnMembers;
     private Button btnLoans;
     private Button btnBookCopies;
+    private Button btnDashboard;
 
     protected override void Dispose(bool disposing)
     {
@@ -38,6 +39,7 @@ partial class FrmMain
         lblTitle = new Label();
         lblStatus = new Label();
         pnlContent = new Panel();
+        btnDashboard = new Button();
 
         pnlSidebar.SuspendLayout();
         pnlHeader.SuspendLayout();
@@ -50,11 +52,25 @@ partial class FrmMain
         pnlSidebar.Controls.Add(btnMembers);
         pnlSidebar.Controls.Add(btnLoans);
         pnlSidebar.Controls.Add(btnBookCopies);
+        pnlSidebar.Controls.Add(btnDashboard);
         pnlSidebar.Dock = DockStyle.Left;
         pnlSidebar.Location = new Point(0, 0);
         pnlSidebar.Name = "pnlSidebar";
         pnlSidebar.Size = new Size(220, 700);
         pnlSidebar.TabIndex = 0;
+
+        btnDashboard.BackColor = Color.FromArgb(52, 73, 94);
+        btnDashboard.FlatAppearance.BorderSize = 0;
+        btnDashboard.FlatStyle = FlatStyle.Flat;
+        btnDashboard.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+        btnDashboard.ForeColor = Color.White;
+        btnDashboard.Location = new Point(15, 25);
+        btnDashboard.Name = "btnDashboard";
+        btnDashboard.Size = new Size(190, 45);
+        btnDashboard.TabIndex = 0;
+        btnDashboard.Text = "Dashboard";
+        btnDashboard.UseVisualStyleBackColor = false;
+        btnDashboard.Click += btnDashboard_Click;
 
         btnBookCopies.BackColor = Color.FromArgb(52, 73, 94);
         btnBookCopies.FlatAppearance.BorderSize = 0;
