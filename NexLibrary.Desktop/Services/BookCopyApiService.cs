@@ -23,6 +23,19 @@ public sealed class BookCopyApiService
             : response.Veri;
     }
 
+    public async Task<List<BookCopyListResponse>> GetByBookIdAsync(
+        int kitapId,
+        CancellationToken cancellationToken = default)
+    {
+        var response = await _apiClient.GetAsync<List<BookCopyListResponse>>(
+            $"api/book-copies/book/{kitapId}",
+            cancellationToken);
+
+        return response is null || !response.BasariliMi || response.Veri is null
+            ? new List<BookCopyListResponse>()
+            : response.Veri;
+    }
+
     public async Task<List<BookCopyListResponse>> GetAvailableByBookIdAsync(
         int kitapId,
         CancellationToken cancellationToken = default)

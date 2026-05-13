@@ -13,6 +13,8 @@ partial class FrmMain
     private Button btnListSettings;
     private Button btnMembers;
     private Button btnLoans;
+    private Button btnBookCopies;
+
     protected override void Dispose(bool disposing)
     {
         if (disposing && components != null)
@@ -31,6 +33,7 @@ partial class FrmMain
         btnListSettings = new Button();
         btnMembers = new Button();
         btnLoans = new Button();
+        btnBookCopies = new Button();
         pnlHeader = new Panel();
         lblTitle = new Label();
         lblStatus = new Label();
@@ -46,11 +49,25 @@ partial class FrmMain
         pnlSidebar.Controls.Add(btnListSettings);
         pnlSidebar.Controls.Add(btnMembers);
         pnlSidebar.Controls.Add(btnLoans);
+        pnlSidebar.Controls.Add(btnBookCopies);
         pnlSidebar.Dock = DockStyle.Left;
         pnlSidebar.Location = new Point(0, 0);
         pnlSidebar.Name = "pnlSidebar";
         pnlSidebar.Size = new Size(220, 700);
         pnlSidebar.TabIndex = 0;
+
+        btnBookCopies.BackColor = Color.FromArgb(52, 73, 94);
+        btnBookCopies.FlatAppearance.BorderSize = 0;
+        btnBookCopies.FlatStyle = FlatStyle.Flat;
+        btnBookCopies.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+        btnBookCopies.ForeColor = Color.White;
+        btnBookCopies.Location = new Point(15, 355);
+        btnBookCopies.Name = "btnBookCopies";
+        btnBookCopies.Size = new Size(190, 45);
+        btnBookCopies.TabIndex = 5;
+        btnBookCopies.Text = "Kitap Kopyaları";
+        btnBookCopies.UseVisualStyleBackColor = false;
+        btnBookCopies.Click += btnBookCopies_Click;
 
         btnBooks.BackColor = Color.FromArgb(52, 73, 94);
         btnBooks.FlatAppearance.BorderSize = 0;

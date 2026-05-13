@@ -31,6 +31,12 @@ public partial class FrmMain : Form
         OpenChildForm(form);
     }
 
+    private void btnBookCopies_Click(object sender, EventArgs e)
+    {
+        var form = _serviceProvider.GetRequiredService<FrmBookCopies>();
+        OpenChildForm(form);
+    }
+
     private void btnFormFields_Click(object sender, EventArgs e)
     {
         var form = _serviceProvider.GetRequiredService<FrmFormFields>();

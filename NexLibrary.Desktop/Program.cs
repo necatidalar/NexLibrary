@@ -53,12 +53,12 @@ internal static class Program
         services.AddScoped<LoanApiService>();
         services.AddScoped<BookCopyApiService>();
 
-        services.AddTransient<FrmLoans>();
         services.AddTransient<FrmMain>();
         services.AddTransient<FrmBooks>();
+        services.AddTransient<FrmMembers>();
+        services.AddTransient<FrmLoans>();
+        services.AddTransient<FrmBookCopies>();
         services.AddTransient<FrmFormFields>();
         services.AddTransient<FrmListSettings>();
-        services.AddTransient<FrmMembers>();
-        services.AddTransient<FrmMemberEdit>();
     }
 }
