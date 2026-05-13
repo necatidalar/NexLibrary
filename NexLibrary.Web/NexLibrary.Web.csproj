@@ -10,4 +10,8 @@
     <ProjectReference Include="..\NexLibrary.Contracts\NexLibrary.Contracts.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Models\" />
+  </ItemGroup>
+
 </Project>
