@@ -50,7 +50,9 @@ internal static class Program
         services.AddScoped<FormFieldApiService>();
         services.AddScoped<BookApiService>();
         services.AddScoped<MemberApiService>();
+        services.AddScoped<LoanApiService>();
 
+        services.AddTransient<FrmLoans>();
         services.AddTransient<FrmMain>();
         services.AddTransient<FrmBooks>();
         services.AddTransient<FrmFormFields>();

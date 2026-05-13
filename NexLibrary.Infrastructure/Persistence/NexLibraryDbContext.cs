@@ -14,6 +14,8 @@ public sealed class NexLibraryDbContext : DbContext
 
     public DbSet<Uye> Uyeler => Set<Uye>();
 
+    public DbSet<Odunc> Oduncler => Set<Odunc>();
+
     public DbSet<FormAlani> FormAlanlari => Set<FormAlani>();
 
     public DbSet<DinamikAlanDegeri> DinamikAlanDegerleri => Set<DinamikAlanDegeri>();

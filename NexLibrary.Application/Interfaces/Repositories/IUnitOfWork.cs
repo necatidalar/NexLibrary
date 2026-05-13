@@ -5,6 +5,10 @@ namespace NexLibrary.Application.Interfaces.Repositories;
 public interface IUnitOfWork : IDisposable
 {
     IGenericRepository<Kitap> Kitaplar { get; }
+    
+    IGenericRepository<Uye> Uyeler { get; }
+
+    IGenericRepository<Odunc> Oduncler { get; }
 
     IGenericRepository<FormAlani> FormAlanlari { get; }
 
@@ -18,7 +22,6 @@ public interface IUnitOfWork : IDisposable
 
     IGenericRepository<AuditLog> AuditLoglari { get; }
 
-    IGenericRepository<Uye> Uyeler { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 

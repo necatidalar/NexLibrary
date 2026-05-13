@@ -43,6 +43,12 @@ public partial class FrmMain : Form
         OpenChildForm(form);
     }
 
+    private void btnLoans_Click(object sender, EventArgs e)
+    {
+        var form = _serviceProvider.GetRequiredService<FrmLoans>();
+        OpenChildForm(form);
+    }
+
     private void OpenChildForm(Form childForm)
     {
         _activeForm?.Close();

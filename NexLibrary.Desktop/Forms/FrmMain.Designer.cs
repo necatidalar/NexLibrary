@@ -12,7 +12,7 @@ partial class FrmMain
     private Button btnFormFields;
     private Button btnListSettings;
     private Button btnMembers;
-
+    private Button btnLoans;
     protected override void Dispose(bool disposing)
     {
         if (disposing && components != null)
@@ -30,6 +30,7 @@ partial class FrmMain
         btnFormFields = new Button();
         btnListSettings = new Button();
         btnMembers = new Button();
+        btnLoans = new Button();
         pnlHeader = new Panel();
         lblTitle = new Label();
         lblStatus = new Label();
@@ -44,6 +45,7 @@ partial class FrmMain
         pnlSidebar.Controls.Add(btnFormFields);
         pnlSidebar.Controls.Add(btnListSettings);
         pnlSidebar.Controls.Add(btnMembers);
+        pnlSidebar.Controls.Add(btnLoans);
         pnlSidebar.Dock = DockStyle.Left;
         pnlSidebar.Location = new Point(0, 0);
         pnlSidebar.Name = "pnlSidebar";
@@ -101,6 +103,19 @@ partial class FrmMain
         btnListSettings.Text = "Liste Ayarları";
         btnListSettings.UseVisualStyleBackColor = false;
         btnListSettings.Click += btnListSettings_Click;
+
+        btnLoans.BackColor = Color.FromArgb(52, 73, 94);
+        btnLoans.FlatAppearance.BorderSize = 0;
+        btnLoans.FlatStyle = FlatStyle.Flat;
+        btnLoans.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+        btnLoans.ForeColor = Color.White;
+        btnLoans.Location = new Point(15, 300);
+        btnLoans.Name = "btnLoans";
+        btnLoans.Size = new Size(190, 45);
+        btnLoans.TabIndex = 4;
+        btnLoans.Text = "Ödünç İşlemleri";
+        btnLoans.UseVisualStyleBackColor = false;
+        btnLoans.Click += btnLoans_Click;
 
         pnlHeader.BackColor = Color.White;
         pnlHeader.Controls.Add(lblStatus);

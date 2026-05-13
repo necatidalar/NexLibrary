@@ -7,7 +7,7 @@ namespace NexLibrary.Infrastructure.Repositories;
 public sealed class UnitOfWork : IUnitOfWork
 {
     private readonly NexLibraryDbContext _context;
-
+    public IGenericRepository<Odunc> Oduncler { get; }
     public IGenericRepository<Uye> Uyeler { get; }
     public UnitOfWork(NexLibraryDbContext context)
     {
@@ -21,6 +21,7 @@ public sealed class UnitOfWork : IUnitOfWork
         KullaniciRolleri = new GenericRepository<KullaniciRol>(_context);
         AuditLoglari = new GenericRepository<AuditLog>(_context);
         Uyeler = new GenericRepository<Uye>(_context);
+        Oduncler = new GenericRepository<Odunc>(_context);
     }
 
     public IGenericRepository<Kitap> Kitaplar { get; }
