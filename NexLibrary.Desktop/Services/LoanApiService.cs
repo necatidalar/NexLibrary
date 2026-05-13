@@ -34,12 +34,41 @@ public sealed class LoanApiService
             : response.Veri;
     }
 
+    public async Task<PagedResponse<LoanListResponse>?> GetOverdueAsync(
+        int pageNumber = 1,
+        int pageSize = 20,
+        CancellationToken cancellationToken = default)
+    {
+        var response = await _apiClient.GetAsync<PagedResponse<LoanListResponse>>(
+            $"api/loans/overdue?pageNumber={pageNumber}&pageSize={pageSize}",
+            cancellationToken);
+
+        return response is null || !response.BasariliMi
+            ? null
+            : response.Veri;
+    }
+
     public async Task<LoanDetailResponse?> CreateAsync(
         LoanCreateRequest request,
         CancellationToken cancellationToken = default)
     {
         var response = await _apiClient.PostAsync<LoanDetailResponse>(
             "api/loans",
+            request,
+            cancellationToken);
+
+        return response is null || !response.BasariliMi
+            ? null
+            : response.Veri;
+    }
+
+    public async Task<LoanDetailResponse?> ReturnAsync(
+        int id,
+        LoanReturnRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        var response = await _apiClient.PatchWithBodyAsync<LoanDetailResponse>(
+            $"api/loans/{id}/return",
             request,
             cancellationToken);
 
@@ -57,5 +86,16 @@ public sealed class LoanApiService
             cancellationToken);
 
         return response is not null && response.BasariliMi && response.Veri;
+    }
+
+    public async Task<int> MarkOverdueAsync(CancellationToken cancellationToken = default)
+    {
+        var response = await _apiClient.PatchAsync<int>(
+            "api/loans/mark-overdue",
+            cancellationToken);
+
+        return response is null || !response.BasariliMi
+            ? 0
+            : response.Veri;
     }
 }

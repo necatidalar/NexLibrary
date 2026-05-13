@@ -4,6 +4,8 @@ public sealed class LoanCreateRequest
 {
     public int KitapId { get; set; }
 
+    public int? KitapKopyaId { get; set; }
+
     public int UyeId { get; set; }
 
     public DateTime PlanlananIadeTarihi { get; set; }

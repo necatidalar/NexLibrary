@@ -4,32 +4,26 @@ using NexLibrary.Domain.Entities;
 
 namespace NexLibrary.Infrastructure.Persistence.Configurations;
 
-public sealed class OduncConfiguration : IEntityTypeConfiguration<Odunc>
+public sealed class KitapKopyaConfiguration : IEntityTypeConfiguration<KitapKopya>
 {
-    public void Configure(EntityTypeBuilder<Odunc> builder)
+    public void Configure(EntityTypeBuilder<KitapKopya> builder)
     {
-        builder.ToTable("Oduncler");
+        builder.ToTable("KitapKopyalari");
 
         builder.HasKey(x => x.Id);
 
         builder.Property(x => x.Id)
-            .HasColumnName("OduncId");
+            .HasColumnName("KitapKopyaId");
 
         builder.Property(x => x.KitapId)
             .IsRequired();
 
-        builder.Property(x => x.KitapKopyaId);
+        builder.Property(x => x.Barkod)
+            .IsRequired()
+            .HasMaxLength(100);
 
-        builder.Property(x => x.UyeId)
-            .IsRequired();
-
-        builder.Property(x => x.VerilisTarihi)
-            .IsRequired();
-
-        builder.Property(x => x.PlanlananIadeTarihi)
-            .IsRequired();
-
-        builder.Property(x => x.IadeTarihi);
+        builder.Property(x => x.DemirbasNo)
+            .HasMaxLength(100);
 
         builder.Property(x => x.Durum)
             .HasConversion<int>()
@@ -55,24 +49,11 @@ public sealed class OduncConfiguration : IEntityTypeConfiguration<Odunc>
             .HasForeignKey(x => x.KitapId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasOne(x => x.KitapKopya)
-            .WithMany()
-            .HasForeignKey(x => x.KitapKopyaId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        builder.HasOne(x => x.Uye)
-            .WithMany()
-            .HasForeignKey(x => x.UyeId)
-            .OnDelete(DeleteBehavior.Restrict);
-
         builder.HasIndex(x => x.KitapId);
 
-        builder.HasIndex(x => x.KitapKopyaId);
-
-        builder.HasIndex(x => x.UyeId);
+        builder.HasIndex(x => x.Barkod)
+            .IsUnique();
 
         builder.HasIndex(x => x.Durum);
-
-        builder.HasIndex(x => x.PlanlananIadeTarihi);
     }
 }

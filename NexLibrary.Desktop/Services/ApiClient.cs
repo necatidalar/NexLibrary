@@ -94,4 +94,19 @@ public sealed class ApiClient
 
         return result ?? ApiResponse<T>.Fail("API cevabı okunamadı.");
     }
+
+    public async Task<ApiResponse<T>?> PatchWithBodyAsync<T>(
+    string url,
+    object data,
+    CancellationToken cancellationToken = default)
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Patch, url)
+        {
+            Content = JsonContent.Create(data, options: JsonOptions)
+        };
+
+        using var response = await _httpClient.SendAsync(request, cancellationToken);
+
+        return await ReadResponseAsync<T>(response, cancellationToken);
+    }
 }

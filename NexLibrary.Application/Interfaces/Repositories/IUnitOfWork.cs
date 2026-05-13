@@ -5,7 +5,9 @@ namespace NexLibrary.Application.Interfaces.Repositories;
 public interface IUnitOfWork : IDisposable
 {
     IGenericRepository<Kitap> Kitaplar { get; }
-    
+
+    IGenericRepository<KitapKopya> KitapKopyalari { get; }
+
     IGenericRepository<Uye> Uyeler { get; }
 
     IGenericRepository<Odunc> Oduncler { get; }

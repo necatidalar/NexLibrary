@@ -12,6 +12,8 @@ public sealed class NexLibraryDbContext : DbContext
 
     public DbSet<Kitap> Kitaplar => Set<Kitap>();
 
+    public DbSet<KitapKopya> KitapKopyalari => Set<KitapKopya>();
+
     public DbSet<Uye> Uyeler => Set<Uye>();
 
     public DbSet<Odunc> Oduncler => Set<Odunc>();

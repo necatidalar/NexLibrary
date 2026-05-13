@@ -51,6 +51,7 @@ internal static class Program
         services.AddScoped<BookApiService>();
         services.AddScoped<MemberApiService>();
         services.AddScoped<LoanApiService>();
+        services.AddScoped<BookCopyApiService>();
 
         services.AddTransient<FrmLoans>();
         services.AddTransient<FrmMain>();

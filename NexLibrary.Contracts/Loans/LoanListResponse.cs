@@ -6,6 +6,10 @@ public sealed class LoanListResponse
 
     public int KitapId { get; set; }
 
+    public int? KitapKopyaId { get; set; }
+
+    public string? KitapKopyaBarkod { get; set; }
+
     public string KitapAdi { get; set; } = string.Empty;
 
     public int UyeId { get; set; }

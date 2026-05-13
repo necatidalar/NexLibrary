@@ -23,6 +23,8 @@ public sealed class LoanService : ILoanService
         string? search = null,
         CancellationToken cancellationToken = default)
     {
+        await MarkOverdueInternalAsync(cancellationToken);
+
         pageNumber = pageNumber <= 0 ? 1 : pageNumber;
         pageSize = pageSize <= 0 ? 20 : pageSize;
 
@@ -30,6 +32,7 @@ public sealed class LoanService : ILoanService
             .Query()
             .AsNoTracking()
             .Include(x => x.Kitap)
+            .Include(x => x.KitapKopya)
             .Include(x => x.Uye)
             .AsQueryable();
 
@@ -39,7 +42,9 @@ public sealed class LoanService : ILoanService
 
             query = query.Where(x =>
                 x.Kitap.KitapAdi.Contains(searchText) ||
-                x.Uye.UyeAdiSoyadi.Contains(searchText));
+                x.Uye.UyeAdiSoyadi.Contains(searchText) ||
+                (x.KitapKopya != null && x.KitapKopya.Barkod.Contains(searchText)) ||
+                (x.KitapKopya != null && x.KitapKopya.DemirbasNo != null && x.KitapKopya.DemirbasNo.Contains(searchText)));
         }
 
         var totalCount = await query.CountAsync(cancellationToken);
@@ -61,14 +66,54 @@ public sealed class LoanService : ILoanService
         return ApiResponse<PagedResponse<LoanListResponse>>.Success(response);
     }
 
+    public async Task<ApiResponse<PagedResponse<LoanListResponse>>> GetOverdueAsync(
+        int pageNumber = 1,
+        int pageSize = 20,
+        CancellationToken cancellationToken = default)
+    {
+        await MarkOverdueInternalAsync(cancellationToken);
+
+        pageNumber = pageNumber <= 0 ? 1 : pageNumber;
+        pageSize = pageSize <= 0 ? 20 : pageSize;
+
+        var query = _unitOfWork.Oduncler
+            .Query()
+            .AsNoTracking()
+            .Include(x => x.Kitap)
+            .Include(x => x.KitapKopya)
+            .Include(x => x.Uye)
+            .Where(x => x.Durum == OduncDurumu.Gecikti && x.AktifMi);
+
+        var totalCount = await query.CountAsync(cancellationToken);
+
+        var loans = await query
+            .OrderBy(x => x.PlanlananIadeTarihi)
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+
+        var response = new PagedResponse<LoanListResponse>
+        {
+            Items = loans.Select(MapToListResponse).ToList(),
+            PageNumber = pageNumber,
+            PageSize = pageSize,
+            TotalCount = totalCount
+        };
+
+        return ApiResponse<PagedResponse<LoanListResponse>>.Success(response);
+    }
+
     public async Task<ApiResponse<LoanDetailResponse>> GetByIdAsync(
         int id,
         CancellationToken cancellationToken = default)
     {
+        await MarkOverdueInternalAsync(cancellationToken);
+
         var loan = await _unitOfWork.Oduncler
             .Query()
             .AsNoTracking()
             .Include(x => x.Kitap)
+            .Include(x => x.KitapKopya)
             .Include(x => x.Uye)
             .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
 
@@ -91,18 +136,31 @@ public sealed class LoanService : ILoanService
             return ApiResponse<LoanDetailResponse>.ValidationFail(errors);
         }
 
+        var selectedCopy = await GetAvailableBookCopyAsync(request, cancellationToken);
+
+        if (selectedCopy is null)
+        {
+            return ApiResponse<LoanDetailResponse>.Fail("Bu kitap için müsait kopya bulunamadı.");
+        }
+
         LoanDetailResponse? createdLoan = null;
 
         await _unitOfWork.ExecuteInTransactionAsync(async () =>
         {
+            selectedCopy.Durum = KitapKopyaDurumu.Oduncte;
+            selectedCopy.GuncellemeTarihi = DateTime.UtcNow;
+
+            _unitOfWork.KitapKopyalari.Update(selectedCopy);
+
             var loan = new Odunc
             {
                 KitapId = request.KitapId,
+                KitapKopyaId = selectedCopy.Id,
                 UyeId = request.UyeId,
                 VerilisTarihi = DateTime.UtcNow,
-                PlanlananIadeTarihi = request.PlanlananIadeTarihi,
+                PlanlananIadeTarihi = request.PlanlananIadeTarihi.Date,
                 Durum = OduncDurumu.Oduncte,
-                Aciklama = request.Aciklama,
+                Aciklama = string.IsNullOrWhiteSpace(request.Aciklama) ? null : request.Aciklama.Trim(),
                 AktifMi = true,
                 OlusturmaTarihi = DateTime.UtcNow
             };
@@ -119,11 +177,71 @@ public sealed class LoanService : ILoanService
             "Kitap başarıyla ödünç verildi.");
     }
 
+    public async Task<ApiResponse<LoanDetailResponse>> ReturnAsync(
+        int id,
+        LoanReturnRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        var loan = await _unitOfWork.Oduncler
+            .Query()
+            .Include(x => x.Kitap)
+            .Include(x => x.KitapKopya)
+            .Include(x => x.Uye)
+            .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+
+        if (loan is null)
+        {
+            return ApiResponse<LoanDetailResponse>.Fail("Ödünç kaydı bulunamadı.");
+        }
+
+        if (loan.Durum == OduncDurumu.IadeEdildi)
+        {
+            return ApiResponse<LoanDetailResponse>.Fail("Bu kayıt zaten iade edilmiş.");
+        }
+
+        if (loan.Durum == OduncDurumu.IptalEdildi)
+        {
+            return ApiResponse<LoanDetailResponse>.Fail("İptal edilmiş ödünç kaydı iade alınamaz.");
+        }
+
+        await _unitOfWork.ExecuteInTransactionAsync(async () =>
+        {
+            loan.IadeTarihi = DateTime.UtcNow;
+            loan.Durum = OduncDurumu.IadeEdildi;
+            loan.GuncellemeTarihi = DateTime.UtcNow;
+
+            if (!string.IsNullOrWhiteSpace(request.Aciklama))
+            {
+                loan.Aciklama = string.IsNullOrWhiteSpace(loan.Aciklama)
+                    ? request.Aciklama.Trim()
+                    : $"{loan.Aciklama} | İade Notu: {request.Aciklama.Trim()}";
+            }
+
+            if (loan.KitapKopya is not null)
+            {
+                loan.KitapKopya.Durum = KitapKopyaDurumu.Musait;
+                loan.KitapKopya.GuncellemeTarihi = DateTime.UtcNow;
+
+                _unitOfWork.KitapKopyalari.Update(loan.KitapKopya);
+            }
+
+            _unitOfWork.Oduncler.Update(loan);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+        }, cancellationToken);
+
+        return ApiResponse<LoanDetailResponse>.Success(
+            MapToDetailResponse(loan),
+            "Kitap başarıyla iade alındı.");
+    }
+
     public async Task<ApiResponse<bool>> CancelAsync(
         int id,
         CancellationToken cancellationToken = default)
     {
-        var loan = await _unitOfWork.Oduncler.GetByIdAsync(id, cancellationToken);
+        var loan = await _unitOfWork.Oduncler
+            .Query()
+            .Include(x => x.KitapKopya)
+            .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
 
         if (loan is null)
         {
@@ -135,14 +253,72 @@ public sealed class LoanService : ILoanService
             return ApiResponse<bool>.Fail("İade edilmiş ödünç kaydı iptal edilemez.");
         }
 
-        loan.Durum = OduncDurumu.IptalEdildi;
-        loan.AktifMi = false;
-        loan.GuncellemeTarihi = DateTime.UtcNow;
+        await _unitOfWork.ExecuteInTransactionAsync(async () =>
+        {
+            loan.Durum = OduncDurumu.IptalEdildi;
+            loan.AktifMi = false;
+            loan.GuncellemeTarihi = DateTime.UtcNow;
 
-        _unitOfWork.Oduncler.Update(loan);
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
+            if (loan.KitapKopya is not null)
+            {
+                loan.KitapKopya.Durum = KitapKopyaDurumu.Musait;
+                loan.KitapKopya.GuncellemeTarihi = DateTime.UtcNow;
+
+                _unitOfWork.KitapKopyalari.Update(loan.KitapKopya);
+            }
+
+            _unitOfWork.Oduncler.Update(loan);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+        }, cancellationToken);
 
         return ApiResponse<bool>.Success(true, "Ödünç kaydı iptal edildi.");
+    }
+
+    public async Task<ApiResponse<int>> MarkOverdueAsync(
+        CancellationToken cancellationToken = default)
+    {
+        var count = await MarkOverdueInternalAsync(cancellationToken);
+
+        return ApiResponse<int>.Success(count, "Geciken ödünç kayıtları güncellendi.");
+    }
+
+    private async Task<int> MarkOverdueInternalAsync(CancellationToken cancellationToken)
+    {
+        var today = DateTime.UtcNow.Date;
+
+        var overdueLoans = await _unitOfWork.Oduncler
+            .Query()
+            .Include(x => x.KitapKopya)
+            .Where(x =>
+                x.AktifMi &&
+                x.Durum == OduncDurumu.Oduncte &&
+                x.PlanlananIadeTarihi.Date < today)
+            .ToListAsync(cancellationToken);
+
+        if (overdueLoans.Count == 0)
+        {
+            return 0;
+        }
+
+        foreach (var loan in overdueLoans)
+        {
+            loan.Durum = OduncDurumu.Gecikti;
+            loan.GuncellemeTarihi = DateTime.UtcNow;
+
+            if (loan.KitapKopya is not null)
+            {
+                loan.KitapKopya.Durum = KitapKopyaDurumu.Gecikti;
+                loan.KitapKopya.GuncellemeTarihi = DateTime.UtcNow;
+
+                _unitOfWork.KitapKopyalari.Update(loan.KitapKopya);
+            }
+
+            _unitOfWork.Oduncler.Update(loan);
+        }
+
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        return overdueLoans.Count;
     }
 
     private async Task<List<ValidationError>> ValidateCreateRequestAsync(
@@ -205,22 +381,85 @@ public sealed class LoanService : ILoanService
             });
         }
 
-        var hasActiveLoan = await _unitOfWork.Oduncler.AnyAsync(
-            x => x.KitapId == request.KitapId &&
-                 x.AktifMi &&
-                 x.Durum == OduncDurumu.Oduncte,
-            cancellationToken);
-
-        if (hasActiveLoan)
+        if (request.KitapKopyaId.HasValue && request.KitapKopyaId.Value > 0)
         {
-            errors.Add(new ValidationError
+            var selectedCopy = await _unitOfWork.KitapKopyalari
+                .Query()
+                .FirstOrDefaultAsync(x =>
+                    x.Id == request.KitapKopyaId.Value &&
+                    x.KitapId == request.KitapId,
+                    cancellationToken);
+
+            if (selectedCopy is null)
             {
-                Field = nameof(request.KitapId),
-                Message = "Bu kitap zaten ödünçte görünüyor."
-            });
+                errors.Add(new ValidationError
+                {
+                    Field = nameof(request.KitapKopyaId),
+                    Message = "Seçilen kitap kopyası bulunamadı."
+                });
+            }
+            else if (!selectedCopy.AktifMi)
+            {
+                errors.Add(new ValidationError
+                {
+                    Field = nameof(request.KitapKopyaId),
+                    Message = "Seçilen kitap kopyası aktif değil."
+                });
+            }
+            else if (selectedCopy.Durum != KitapKopyaDurumu.Musait)
+            {
+                errors.Add(new ValidationError
+                {
+                    Field = nameof(request.KitapKopyaId),
+                    Message = "Seçilen kitap kopyası müsait değil."
+                });
+            }
+        }
+        else
+        {
+            var hasAvailableCopy = await _unitOfWork.KitapKopyalari.AnyAsync(
+                x => x.KitapId == request.KitapId &&
+                     x.AktifMi &&
+                     x.Durum == KitapKopyaDurumu.Musait,
+                cancellationToken);
+
+            if (!hasAvailableCopy)
+            {
+                errors.Add(new ValidationError
+                {
+                    Field = nameof(request.KitapId),
+                    Message = "Bu kitap için müsait kopya bulunamadı."
+                });
+            }
         }
 
         return errors;
+    }
+
+    private async Task<KitapKopya?> GetAvailableBookCopyAsync(
+        LoanCreateRequest request,
+        CancellationToken cancellationToken)
+    {
+        if (request.KitapKopyaId.HasValue && request.KitapKopyaId.Value > 0)
+        {
+            return await _unitOfWork.KitapKopyalari
+                .Query()
+                .FirstOrDefaultAsync(x =>
+                    x.Id == request.KitapKopyaId.Value &&
+                    x.KitapId == request.KitapId &&
+                    x.AktifMi &&
+                    x.Durum == KitapKopyaDurumu.Musait,
+                    cancellationToken);
+        }
+
+        return await _unitOfWork.KitapKopyalari
+            .Query()
+            .Where(x =>
+                x.KitapId == request.KitapId &&
+                x.AktifMi &&
+                x.Durum == KitapKopyaDurumu.Musait)
+            .OrderBy(x => x.Id)
+            .FirstOrDefaultAsync(cancellationToken);
     }
 
     private static LoanListResponse MapToListResponse(Odunc loan)
@@ -230,6 +469,8 @@ public sealed class LoanService : ILoanService
             Id = loan.Id,
             KitapId = loan.KitapId,
             KitapAdi = loan.Kitap.KitapAdi,
+            KitapKopyaId = loan.KitapKopyaId,
+            KitapKopyaBarkod = loan.KitapKopya?.Barkod,
             UyeId = loan.UyeId,
             UyeAdiSoyadi = loan.Uye.UyeAdiSoyadi,
             VerilisTarihi = loan.VerilisTarihi,
@@ -247,6 +488,9 @@ public sealed class LoanService : ILoanService
             Id = loan.Id,
             KitapId = loan.KitapId,
             KitapAdi = loan.Kitap.KitapAdi,
+            KitapKopyaId = loan.KitapKopyaId,
+            KitapKopyaBarkod = loan.KitapKopya?.Barkod,
+            KitapKopyaDemirbasNo = loan.KitapKopya?.DemirbasNo,
             UyeId = loan.UyeId,
             UyeAdiSoyadi = loan.Uye.UyeAdiSoyadi,
             VerilisTarihi = loan.VerilisTarihi,

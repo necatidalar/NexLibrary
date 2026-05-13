@@ -12,6 +12,7 @@ public static class DependencyInjection
         services.AddScoped<IFormFieldService, FormFieldService>();
         services.AddScoped<IMemberService, MemberService>();
         services.AddScoped<ILoanService, LoanService>();
+        services.AddScoped<IBookCopyService, BookCopyService>();
 
         return services;
     }

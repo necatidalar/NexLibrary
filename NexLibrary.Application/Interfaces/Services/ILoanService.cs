@@ -11,6 +11,11 @@ public interface ILoanService
         string? search = null,
         CancellationToken cancellationToken = default);
 
+    Task<ApiResponse<PagedResponse<LoanListResponse>>> GetOverdueAsync(
+        int pageNumber = 1,
+        int pageSize = 20,
+        CancellationToken cancellationToken = default);
+
     Task<ApiResponse<LoanDetailResponse>> GetByIdAsync(
         int id,
         CancellationToken cancellationToken = default);
@@ -19,7 +24,15 @@ public interface ILoanService
         LoanCreateRequest request,
         CancellationToken cancellationToken = default);
 
+    Task<ApiResponse<LoanDetailResponse>> ReturnAsync(
+        int id,
+        LoanReturnRequest request,
+        CancellationToken cancellationToken = default);
+
     Task<ApiResponse<bool>> CancelAsync(
         int id,
+        CancellationToken cancellationToken = default);
+
+    Task<ApiResponse<int>> MarkOverdueAsync(
         CancellationToken cancellationToken = default);
 }

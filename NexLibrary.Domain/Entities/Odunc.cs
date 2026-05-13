@@ -9,6 +9,10 @@ public sealed class Odunc : BaseEntity
 
     public Kitap Kitap { get; set; } = null!;
 
+    public int? KitapKopyaId { get; set; }
+
+    public KitapKopya? KitapKopya { get; set; }
+
     public int UyeId { get; set; }
 
     public Uye Uye { get; set; } = null!;

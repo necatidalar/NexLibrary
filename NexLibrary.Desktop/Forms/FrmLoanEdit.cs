@@ -10,20 +10,23 @@ public partial class FrmLoanEdit : Form
     private readonly LoanApiService _loanApiService;
     private readonly BookApiService _bookApiService;
     private readonly MemberApiService _memberApiService;
+    private readonly BookCopyApiService _bookCopyApiService;
 
     private List<BookListResponse> _books = new();
     private List<MemberListResponse> _members = new();
 
     public FrmLoanEdit(
-        LoanApiService loanApiService,
-        BookApiService bookApiService,
-        MemberApiService memberApiService)
+    LoanApiService loanApiService,
+    BookApiService bookApiService,
+    MemberApiService memberApiService,
+    BookCopyApiService bookCopyApiService)
     {
         InitializeComponent();
 
         _loanApiService = loanApiService;
         _bookApiService = bookApiService;
         _memberApiService = memberApiService;
+        _bookCopyApiService = bookCopyApiService;
     }
 
     private async void FrmLoanEdit_Load(object sender, EventArgs e)
@@ -36,16 +39,32 @@ public partial class FrmLoanEdit : Form
 
     private async Task LoadBooksAsync()
     {
-        var result = await _bookApiService.GetPagedAsync(1, 500);
+        var bookResult = await _bookApiService.GetPagedAsync(1, 500);
+        var stockSummary = await _bookCopyApiService.GetStockSummaryAsync();
 
-        _books = result?.Items
-            .Where(x => x.AktifMi)
+        var availableBookIds = stockSummary
+            .Where(x => x.Musait > 0)
+            .Select(x => x.KitapId)
+            .ToHashSet();
+
+        _books = bookResult?.Items
+            .Where(x => x.AktifMi && availableBookIds.Contains(x.Id))
             .OrderBy(x => x.KitapAdi)
             .ToList() ?? new List<BookListResponse>();
 
+        cmbBooks.DataSource = null;
         cmbBooks.DataSource = _books;
         cmbBooks.DisplayMember = nameof(BookListResponse.KitapAdi);
         cmbBooks.ValueMember = nameof(BookListResponse.Id);
+
+        if (_books.Count == 0)
+        {
+            MessageBox.Show(
+                "Ödünç verilebilecek müsait kitap bulunamadı.",
+                "NexLibrary",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information);
+        }
     }
 
     private async Task LoadMembersAsync()
@@ -79,11 +98,12 @@ public partial class FrmLoanEdit : Form
         var request = new LoanCreateRequest
         {
             KitapId = Convert.ToInt32(cmbBooks.SelectedValue),
+            KitapKopyaId = null,
             UyeId = Convert.ToInt32(cmbMembers.SelectedValue),
             PlanlananIadeTarihi = dtpPlanlananIadeTarihi.Value.Date,
             Aciklama = string.IsNullOrWhiteSpace(txtAciklama.Text)
-                ? null
-                : txtAciklama.Text.Trim()
+        ? null
+        : txtAciklama.Text.Trim()
         };
 
         var result = await _loanApiService.CreateAsync(request);

@@ -10,6 +10,8 @@ partial class FrmLoans
     private Button btnRefresh;
     private Button btnAdd;
     private Button btnCancelLoan;
+    private Button btnReturn;
+    private Button btnShowOverdue;
     private Label lblCount;
     private DataGridView dgvLoans;
 
@@ -31,6 +33,8 @@ partial class FrmLoans
         btnAdd = new Button();
         btnRefresh = new Button();
         btnSearch = new Button();
+        btnReturn = new Button();
+        btnShowOverdue = new Button();
         txtSearch = new TextBox();
         lblTitle = new Label();
         dgvLoans = new DataGridView();
@@ -47,6 +51,8 @@ partial class FrmLoans
         pnlTop.Controls.Add(btnSearch);
         pnlTop.Controls.Add(txtSearch);
         pnlTop.Controls.Add(lblTitle);
+        pnlTop.Controls.Add(btnShowOverdue);
+        pnlTop.Controls.Add(btnReturn);
         pnlTop.Dock = DockStyle.Top;
         pnlTop.Location = new Point(0, 0);
         pnlTop.Padding = new Padding(15);
@@ -83,6 +89,31 @@ partial class FrmLoans
         btnCancelLoan.Size = new Size(105, 30);
         btnCancelLoan.Text = "İptal Et";
         btnCancelLoan.Click += btnCancelLoan_Click;
+
+        btnShowOverdue.Location = new Point(480, 64);
+        btnShowOverdue.Name = "btnShowOverdue";
+        btnShowOverdue.Size = new Size(130, 28);
+        btnShowOverdue.TabIndex = 4;
+        btnShowOverdue.Text = "Gecikenleri Göster";
+        btnShowOverdue.UseVisualStyleBackColor = true;
+        btnShowOverdue.Click += btnShowOverdue_Click;
+
+        btnAdd.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+        btnAdd.Location = new Point(620, 63);
+        btnAdd.Size = new Size(100, 30);
+
+        btnReturn.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+        btnReturn.Location = new Point(730, 63);
+        btnReturn.Name = "btnReturn";
+        btnReturn.Size = new Size(100, 30);
+        btnReturn.TabIndex = 6;
+        btnReturn.Text = "İade Al";
+        btnReturn.UseVisualStyleBackColor = true;
+        btnReturn.Click += btnReturn_Click;
+
+        btnCancelLoan.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+        btnCancelLoan.Location = new Point(840, 63);
+        btnCancelLoan.Size = new Size(105, 30);
 
         lblCount.Anchor = AnchorStyles.Top | AnchorStyles.Right;
         lblCount.Location = new Point(650, 20);

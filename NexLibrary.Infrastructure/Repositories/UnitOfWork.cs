@@ -9,11 +9,13 @@ public sealed class UnitOfWork : IUnitOfWork
     private readonly NexLibraryDbContext _context;
     public IGenericRepository<Odunc> Oduncler { get; }
     public IGenericRepository<Uye> Uyeler { get; }
+    public IGenericRepository<KitapKopya> KitapKopyalari { get; }
     public UnitOfWork(NexLibraryDbContext context)
     {
         _context = context;
 
         Kitaplar = new GenericRepository<Kitap>(_context);
+        KitapKopyalari = new GenericRepository<KitapKopya>(_context);
         FormAlanlari = new GenericRepository<FormAlani>(_context);
         DinamikAlanDegerleri = new GenericRepository<DinamikAlanDegeri>(_context);
         Kullanicilar = new GenericRepository<Kullanici>(_context);
