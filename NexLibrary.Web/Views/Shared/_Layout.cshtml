@@ -1,50 +1,86 @@
 ﻿<!DOCTYPE html>
-<html lang="en">
+<html lang="tr">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - NexLibrary.Web</title>
-    <script type="importmap"></script>
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/NexLibrary.Web.styles.css" asp-append-version="true" />
+    <title>NexLibrary</title>
+
+    <style>
+            body {
+                margin: 0;
+                font-family: "Segoe UI", Arial, sans-serif;
+                background: #f5f7fa;
+                color: #222;
+            }
+
+            .layout {
+                display: flex;
+                min-height: 100vh;
+            }
+
+            .sidebar {
+                width: 230px;
+                background: #232d3c;
+                color: white;
+                padding: 20px 15px;
+            }
+
+            .brand {
+                font-size: 22px;
+                font-weight: 700;
+                margin-bottom: 30px;
+            }
+
+            .menu-link {
+                display: block;
+                color: white;
+                text-decoration: none;
+                background: #34495e;
+                padding: 13px 15px;
+                border-radius: 8px;
+                margin-bottom: 10px;
+                font-weight: 600;
+            }
+
+            .menu-link:hover {
+                background: #405c78;
+            }
+
+            .content {
+                flex: 1;
+                padding: 25px;
+            }
+
+            .topbar {
+                background: white;
+                border-radius: 12px;
+                padding: 18px 22px;
+                margin-bottom: 20px;
+                box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+            }
+
+            .topbar-title {
+                font-size: 24px;
+                font-weight: 700;
+            }
+    </style>
 </head>
 <body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">NexLibrary.Web</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </nav>
-    </header>
-    <div class="container">
-        <main role="main" class="pb-3">
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="brand">NexLibrary</div>
+
+            <a class="menu-link" asp-controller="Dashboard" asp-action="Index">Dashboard</a>
+            <a class="menu-link" href="#">Kitaplar</a>
+            <a class="menu-link" href="#">Üyeler</a>
+            <a class="menu-link" href="#">Ödünç İşlemleri</a>
+            <a class="menu-link" href="#">Kitap Kopyaları</a>
+            <a class="menu-link" href="#">Form Alanları</a>
+        </aside>
+
+        <main class="content">
             @RenderBody()
         </main>
     </div>
-
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - NexLibrary.Web - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-        </div>
-    </footer>
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
-    @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

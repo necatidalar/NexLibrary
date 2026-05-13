@@ -1,29 +1,44 @@
+using NexLibrary.Web.Options;
+using NexLibrary.Web.Services;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 builder.Services.AddControllersWithViews();
+
+var apiSettings = new ApiSettings();
+builder.Configuration.GetSection("ApiSettings").Bind(apiSettings);
+
+if (string.IsNullOrWhiteSpace(apiSettings.BaseUrl))
+{
+    throw new InvalidOperationException("ApiSettings:BaseUrl ayarı bulunamadı.");
+}
+
+builder.Services.AddSingleton(apiSettings);
+
+builder.Services.AddHttpClient<DashboardApiService>(client =>
+{
+    client.BaseAddress = new Uri(apiSettings.BaseUrl.TrimEnd('/') + "/");
+    client.Timeout = TimeSpan.FromSeconds(30);
+});
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+    app.UseExceptionHandler("/Dashboard/Error");
     app.UseHsts();
 }
 
 app.UseHttpsRedirection();
+
+app.UseStaticFiles();
+
 app.UseRouting();
 
 app.UseAuthorization();
 
-app.MapStaticAssets();
-
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}")
-    .WithStaticAssets();
-
+    pattern: "{controller=Dashboard}/{action=Index}/{id?}");
 
 app.Run();

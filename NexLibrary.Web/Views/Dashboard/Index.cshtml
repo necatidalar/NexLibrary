@@ -1,0 +1,285 @@
+﻿@model DashboardSummaryResponse
+
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<style>
+    .dashboard-header {
+        background: white;
+        border-radius: 12px;
+        padding: 18px 22px;
+        margin-bottom: 20px;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .dashboard-title {
+        font-size: 24px;
+        font-weight: 700;
+    }
+
+    .dashboard-subtitle {
+        color: #6b7280;
+        margin-top: 4px;
+        font-size: 14px;
+    }
+
+    .refresh-link {
+        background: #34495e;
+        color: white;
+        text-decoration: none;
+        padding: 10px 16px;
+        border-radius: 8px;
+        font-weight: 600;
+    }
+
+        .refresh-link:hover {
+            background: #405c78;
+        }
+
+    .alert {
+        background: #fff3cd;
+        color: #664d03;
+        border: 1px solid #ffecb5;
+        padding: 14px 16px;
+        border-radius: 10px;
+        margin-bottom: 18px;
+    }
+
+    .cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+
+    .card {
+        background: white;
+        border-radius: 14px;
+        padding: 18px;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+        border: 1px solid #eef0f3;
+    }
+
+    .card-value {
+        font-size: 30px;
+        font-weight: 800;
+        margin-bottom: 8px;
+    }
+
+    .card-title {
+        font-weight: 700;
+        font-size: 15px;
+        margin-bottom: 4px;
+    }
+
+    .card-desc {
+        color: #6b7280;
+        font-size: 13px;
+    }
+
+    .section {
+        background: white;
+        border-radius: 14px;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+        border: 1px solid #eef0f3;
+        overflow: hidden;
+    }
+
+    .section-header {
+        padding: 16px 18px;
+        border-bottom: 1px solid #eef0f3;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .section-title {
+        font-size: 18px;
+        font-weight: 700;
+    }
+
+    .section-count {
+        color: #6b7280;
+        font-size: 14px;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    th {
+        background: #f9fafb;
+        text-align: left;
+        padding: 12px;
+        font-size: 14px;
+        border-bottom: 1px solid #eef0f3;
+    }
+
+    td {
+        padding: 12px;
+        border-bottom: 1px solid #eef0f3;
+        font-size: 14px;
+    }
+
+    .badge {
+        display: inline-block;
+        padding: 5px 9px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 700;
+        background: #edf2f7;
+    }
+
+    .badge-ok {
+        background: #dcfce7;
+        color: #166534;
+    }
+
+    .badge-danger {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    .badge-muted {
+        background: #e5e7eb;
+        color: #374151;
+    }
+</style>
+
+<div class="dashboard-header">
+    <div>
+        <div class="dashboard-title">Dashboard</div>
+        <div class="dashboard-subtitle">NexLibrary genel özet ve son ödünç kayıtları</div>
+    </div>
+
+    <a class="refresh-link" asp-controller="Dashboard" asp-action="Index">Yenile</a>
+</div>
+
+@if (ViewBag.ErrorMessage is not null)
+{
+    <div class="alert">
+        @ViewBag.ErrorMessage
+    </div>
+}
+
+<div class="cards">
+    <div class="card">
+        <div class="card-value">@Model.ToplamKitap</div>
+        <div class="card-title">Toplam Kitap</div>
+        <div class="card-desc">Aktif kitap sayısı</div>
+    </div>
+
+    <div class="card">
+        <div class="card-value">@Model.ToplamUye</div>
+        <div class="card-title">Toplam Üye</div>
+        <div class="card-desc">Aktif üye sayısı</div>
+    </div>
+
+    <div class="card">
+        <div class="card-value">@Model.ToplamKopya</div>
+        <div class="card-title">Toplam Kopya</div>
+        <div class="card-desc">Fiziksel kitap adedi</div>
+    </div>
+
+    <div class="card">
+        <div class="card-value">@Model.MusaitKopya</div>
+        <div class="card-title">Müsait Kopya</div>
+        <div class="card-desc">Ödünç verilebilir stok</div>
+    </div>
+
+    <div class="card">
+        <div class="card-value">@Model.OdunctekiKopya</div>
+        <div class="card-title">Ödünçte</div>
+        <div class="card-desc">Şu an üyelerde olan</div>
+    </div>
+
+    <div class="card">
+        <div class="card-value">@Model.GecikenOdunc</div>
+        <div class="card-title">Geciken</div>
+        <div class="card-desc">İade tarihi geçmiş kayıt</div>
+    </div>
+
+    <div class="card">
+        <div class="card-value">@Model.BugunIadeEdilen</div>
+        <div class="card-title">Bugün İade</div>
+        <div class="card-desc">Bugün iade alınanlar</div>
+    </div>
+
+    <div class="card">
+        <div class="card-value">@Model.Son7GunOdunc</div>
+        <div class="card-title">Son 7 Gün Ödünç</div>
+        <div class="card-desc">Haftalık ödünç sayısı</div>
+    </div>
+
+    <div class="card">
+        <div class="card-value">@Model.Son7GunIade</div>
+        <div class="card-title">Son 7 Gün İade</div>
+        <div class="card-desc">Haftalık iade sayısı</div>
+    </div>
+
+    <div class="card">
+        <div class="card-value">@Model.KayipKopya / @Model.HasarliKopya</div>
+        <div class="card-title">Kayıp / Hasarlı</div>
+        <div class="card-desc">Sorunlu kopyalar</div>
+    </div>
+</div>
+
+<div class="section">
+    <div class="section-header">
+        <div class="section-title">Son Ödünç Kayıtları</div>
+        <div class="section-count">@Model.SonOduncler.Count kayıt</div>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Kitap</th>
+                <th>Barkod</th>
+                <th>Üye</th>
+                <th>Veriliş</th>
+                <th>Planlanan İade</th>
+                <th>İade</th>
+                <th>Durum</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.SonOduncler.Count == 0)
+            {
+                <tr>
+                    <td colspan="8">Henüz ödünç kaydı bulunmuyor.</td>
+                </tr>
+            }
+            else
+            {
+                foreach (var item in Model.SonOduncler)
+                {
+                    var badgeClass = item.Durum switch
+                    {
+                        "IadeEdildi" => "badge badge-ok",
+                        "Gecikti" => "badge badge-danger",
+                        "IptalEdildi" => "badge badge-muted",
+                        _ => "badge"
+                    };
+
+                    <tr>
+                        <td>@item.Id</td>
+                        <td>@item.KitapAdi</td>
+                        <td>@(item.Barkod ?? "-")</td>
+                        <td>@item.UyeAdiSoyadi</td>
+                        <td>@item.VerilisTarihi.ToString("dd.MM.yyyy")</td>
+                        <td>@item.PlanlananIadeTarihi.ToString("dd.MM.yyyy")</td>
+                        <td>@(item.IadeTarihi?.ToString("dd.MM.yyyy") ?? "-")</td>
+                        <td><span class="@badgeClass">@item.Durum</span></td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>
