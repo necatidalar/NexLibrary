@@ -7,11 +7,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\NexLibrary.Contracts\NexLibrary.Contracts.csproj" />
+    <Compile Remove="Models\**" />
+    <Content Remove="Models\**" />
+    <EmbeddedResource Remove="Models\**" />
+    <None Remove="Models\**" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Models\" />
+    <ProjectReference Include="..\NexLibrary.Contracts\NexLibrary.Contracts.csproj" />
   </ItemGroup>
 
 </Project>

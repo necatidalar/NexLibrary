@@ -1,0 +1,310 @@
+﻿@model NexLibrary.Web.ViewModels.Members.MembersIndexViewModel
+
+@{
+    ViewData["Title"] = "Üyeler";
+
+    var dynamicColumns = Model.Members.Items
+        .SelectMany(x => x.DinamikAlanlar.Keys)
+        .Distinct()
+        .ToList();
+
+    var totalPages = Model.Members.PageSize <= 0
+        ? 1
+        : (int)Math.Ceiling(Model.Members.TotalCount / (double)Model.Members.PageSize);
+
+    totalPages = totalPages <= 0 ? 1 : totalPages;
+}
+
+<style>
+    .page-header {
+        background: white;
+        border-radius: 12px;
+        padding: 18px 22px;
+        margin-bottom: 20px;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .page-title {
+        font-size: 24px;
+        font-weight: 700;
+    }
+
+    .page-subtitle {
+        color: #6b7280;
+        margin-top: 4px;
+        font-size: 14px;
+    }
+
+    .search-box {
+        background: white;
+        border-radius: 12px;
+        padding: 16px;
+        margin-bottom: 20px;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+
+    .search-input {
+        flex: 1;
+        padding: 11px 12px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        font-size: 14px;
+    }
+
+    .btn {
+        border: none;
+        background: #34495e;
+        color: white;
+        padding: 11px 16px;
+        border-radius: 8px;
+        font-weight: 700;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+        .btn:hover {
+            background: #405c78;
+        }
+
+    .btn-light {
+        background: #e5e7eb;
+        color: #111827;
+    }
+
+        .btn-light:hover {
+            background: #d1d5db;
+        }
+
+    .alert {
+        background: #fff3cd;
+        color: #664d03;
+        border: 1px solid #ffecb5;
+        padding: 14px 16px;
+        border-radius: 10px;
+        margin-bottom: 18px;
+    }
+
+    .table-card {
+        background: white;
+        border-radius: 14px;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+        border: 1px solid #eef0f3;
+        overflow: hidden;
+    }
+
+    .table-header {
+        padding: 16px 18px;
+        border-bottom: 1px solid #eef0f3;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .table-title {
+        font-size: 18px;
+        font-weight: 700;
+    }
+
+    .table-count {
+        color: #6b7280;
+        font-size: 14px;
+    }
+
+    .table-wrapper {
+        overflow-x: auto;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 850px;
+    }
+
+    th {
+        background: #f9fafb;
+        text-align: left;
+        padding: 12px;
+        font-size: 14px;
+        border-bottom: 1px solid #eef0f3;
+        white-space: nowrap;
+    }
+
+    td {
+        padding: 12px;
+        border-bottom: 1px solid #eef0f3;
+        font-size: 14px;
+        white-space: nowrap;
+    }
+
+    .badge {
+        display: inline-block;
+        padding: 5px 9px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .badge-ok {
+        background: #dcfce7;
+        color: #166534;
+    }
+
+    .badge-passive {
+        background: #e5e7eb;
+        color: #374151;
+    }
+
+    .pagination {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 14px 18px;
+        border-top: 1px solid #eef0f3;
+        gap: 12px;
+    }
+
+    .pagination-info {
+        color: #6b7280;
+        font-size: 14px;
+    }
+
+    .pagination-actions {
+        display: flex;
+        gap: 8px;
+    }
+</style>
+
+<div class="page-header">
+    <div>
+        <div class="page-title">Üyeler</div>
+        <div class="page-subtitle">Dinamik alanlarla birlikte üye listesi</div>
+    </div>
+
+    <a class="btn" asp-controller="Members" asp-action="Index">Yenile</a>
+</div>
+
+@if (ViewBag.ErrorMessage is not null)
+{
+    <div class="alert">
+        @ViewBag.ErrorMessage
+    </div>
+}
+
+<form class="search-box" method="get" asp-controller="Members" asp-action="Index">
+    <input class="search-input"
+           type="text"
+           name="search"
+           value="@Model.Search"
+           placeholder="Üye adı, telefon, okul no veya dinamik alan ara..." />
+
+    <input type="hidden" name="pageSize" value="@Model.PageSize" />
+
+    <button class="btn" type="submit">Ara</button>
+
+    <a class="btn btn-light" asp-controller="Members" asp-action="Index">Temizle</a>
+</form>
+
+<div class="table-card">
+    <div class="table-header">
+        <div class="table-title">Üye Listesi</div>
+        <div class="table-count">Toplam kayıt: @Model.Members.TotalCount</div>
+    </div>
+
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Üye Adı Soyadı</th>
+
+                    @foreach (var column in dynamicColumns)
+                    {
+                        <th>@column</th>
+                    }
+
+                    <th>Durum</th>
+                    <th>Oluşturma Tarihi</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @if (Model.Members.Items.Count == 0)
+                {
+                    <tr>
+                        <td colspan="@(dynamicColumns.Count + 4)">Üye kaydı bulunamadı.</td>
+                    </tr>
+                }
+                else
+                {
+                    foreach (var member in Model.Members.Items)
+                    {
+                        <tr>
+                            <td>@member.Id</td>
+                            <td>@member.UyeAdiSoyadi</td>
+
+                            @foreach (var column in dynamicColumns)
+                            {
+                                <td>
+                                    @(member.DinamikAlanlar.TryGetValue(column, out var value) ? value : "-")
+                                </td>
+                            }
+
+                            <td>
+                                @if (member.AktifMi)
+                                {
+                                    <span class="badge badge-ok">Aktif</span>
+                                }
+                                else
+                                {
+                                    <span class="badge badge-passive">Pasif</span>
+                                }
+                            </td>
+
+                            <td>@member.OlusturmaTarihi.ToString("dd.MM.yyyy")</td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="pagination">
+        <div class="pagination-info">
+            Sayfa @Model.Members.PageNumber / @totalPages
+        </div>
+
+        <div class="pagination-actions">
+            @if (Model.Members.PageNumber > 1)
+            {
+                <a class="btn btn-light"
+                       asp-controller="Members"
+                       asp-action="Index"
+                       asp-route-search="@Model.Search"
+                       asp-route-pageNumber="@(Model.Members.PageNumber - 1)"
+                       asp-route-pageSize="@Model.PageSize">
+                    Önceki
+                </a>
+            }
+
+            @if (Model.Members.PageNumber < totalPages)
+            {
+                <a class="btn"
+                       asp-controller="Members"
+                       asp-action="Index"
+                       asp-route-search="@Model.Search"
+                       asp-route-pageNumber="@(Model.Members.PageNumber + 1)"
+                       asp-route-pageSize="@Model.PageSize">
+                    Sonraki
+                </a>
+            }
+        </div>
+    </div>
+</div>
