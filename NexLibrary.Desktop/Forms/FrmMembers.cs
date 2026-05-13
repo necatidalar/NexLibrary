@@ -1,5 +1,4 @@
-﻿using NexLibrary.Contracts.DynamicForms;
-using NexLibrary.Contracts.Members;
+﻿using NexLibrary.Contracts.Members;
 using NexLibrary.Desktop.Services;
 
 namespace NexLibrary.Desktop.Forms;
@@ -10,6 +9,7 @@ public partial class FrmMembers : Form
     private readonly FormFieldApiService _formFieldApiService;
 
     private List<MemberListResponse> _members = new();
+    private int _selectedMemberId;
 
     public FrmMembers(
         MemberApiService memberApiService,
@@ -30,6 +30,8 @@ public partial class FrmMembers : Form
     {
         try
         {
+            btnRefresh.Enabled = false;
+
             var result = await _memberApiService.GetPagedAsync(
                 1,
                 100,
@@ -46,6 +48,10 @@ public partial class FrmMembers : Form
                 "NexLibrary",
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Error);
+        }
+        finally
+        {
+            btnRefresh.Enabled = true;
         }
     }
 
@@ -117,6 +123,7 @@ public partial class FrmMembers : Form
         }
 
         lblCount.Text = $"Toplam üye: {_members.Count}";
+        _selectedMemberId = 0;
     }
 
     private async void btnRefresh_Click(object sender, EventArgs e)
@@ -129,6 +136,15 @@ public partial class FrmMembers : Form
         await LoadMembersAsync();
     }
 
+    private async void txtSearch_KeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.KeyCode == Keys.Enter)
+        {
+            e.SuppressKeyPress = true;
+            await LoadMembersAsync();
+        }
+    }
+
     private async void btnAdd_Click(object sender, EventArgs e)
     {
         using var form = new FrmMemberEdit(_memberApiService, _formFieldApiService);
@@ -136,6 +152,108 @@ public partial class FrmMembers : Form
         if (form.ShowDialog(this) == DialogResult.OK)
         {
             await LoadMembersAsync();
+        }
+    }
+
+    private async void btnEdit_Click(object sender, EventArgs e)
+    {
+        if (_selectedMemberId <= 0)
+        {
+            MessageBox.Show(
+                "Lütfen düzenlenecek üyeyi seçin.",
+                "NexLibrary",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Warning);
+            return;
+        }
+
+        using var form = new FrmMemberEdit(
+            _memberApiService,
+            _formFieldApiService,
+            _selectedMemberId);
+
+        if (form.ShowDialog(this) == DialogResult.OK)
+        {
+            await LoadMembersAsync();
+        }
+    }
+
+    private void btnDetail_Click(object sender, EventArgs e)
+    {
+        OpenDetailForm();
+    }
+
+    private async void btnDelete_Click(object sender, EventArgs e)
+    {
+        if (_selectedMemberId <= 0)
+        {
+            MessageBox.Show(
+                "Lütfen pasif yapılacak üyeyi seçin.",
+                "NexLibrary",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Warning);
+            return;
+        }
+
+        var confirm = MessageBox.Show(
+            "Seçili üye pasif hale getirilecek. Devam edilsin mi?",
+            "NexLibrary",
+            MessageBoxButtons.YesNo,
+            MessageBoxIcon.Question);
+
+        if (confirm != DialogResult.Yes)
+        {
+            return;
+        }
+
+        var success = await _memberApiService.DeleteAsync(_selectedMemberId);
+
+        if (!success)
+        {
+            MessageBox.Show(
+                "Üye pasif hale getirilemedi.",
+                "NexLibrary",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Error);
+            return;
+        }
+
+        await LoadMembersAsync();
+    }
+
+    private void OpenDetailForm()
+    {
+        if (_selectedMemberId <= 0)
+        {
+            MessageBox.Show(
+                "Lütfen detayını görmek istediğiniz üyeyi seçin.",
+                "NexLibrary",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Warning);
+            return;
+        }
+
+        using var form = new FrmMemberDetail(_memberApiService, _selectedMemberId);
+        form.ShowDialog(this);
+    }
+
+    private void dgvMembers_SelectionChanged(object sender, EventArgs e)
+    {
+        _selectedMemberId = 0;
+
+        if (dgvMembers.CurrentRow?.Cells["Id"].Value is null)
+        {
+            return;
+        }
+
+        int.TryParse(dgvMembers.CurrentRow.Cells["Id"].Value.ToString(), out _selectedMemberId);
+    }
+
+    private void dgvMembers_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
+    {
+        if (e.RowIndex >= 0)
+        {
+            OpenDetailForm();
         }
     }
 }

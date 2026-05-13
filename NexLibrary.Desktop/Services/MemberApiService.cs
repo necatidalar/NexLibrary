@@ -34,6 +34,19 @@ public sealed class MemberApiService
             : response.Veri;
     }
 
+    public async Task<MemberDetailResponse?> GetByIdAsync(
+        int id,
+        CancellationToken cancellationToken = default)
+    {
+        var response = await _apiClient.GetAsync<MemberDetailResponse>(
+            $"api/members/{id}",
+            cancellationToken);
+
+        return response is null || !response.BasariliMi
+            ? null
+            : response.Veri;
+    }
+
     public async Task<MemberDetailResponse?> CreateAsync(
         MemberCreateRequest request,
         CancellationToken cancellationToken = default)
@@ -46,5 +59,31 @@ public sealed class MemberApiService
         return response is null || !response.BasariliMi
             ? null
             : response.Veri;
+    }
+
+    public async Task<MemberDetailResponse?> UpdateAsync(
+        int id,
+        MemberUpdateRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        var response = await _apiClient.PutAsync<MemberDetailResponse>(
+            $"api/members/{id}",
+            request,
+            cancellationToken);
+
+        return response is null || !response.BasariliMi
+            ? null
+            : response.Veri;
+    }
+
+    public async Task<bool> DeleteAsync(
+        int id,
+        CancellationToken cancellationToken = default)
+    {
+        var response = await _apiClient.DeleteAsync<bool>(
+            $"api/members/{id}",
+            cancellationToken);
+
+        return response is not null && response.BasariliMi && response.Veri;
     }
 }

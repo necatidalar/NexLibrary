@@ -12,6 +12,7 @@ partial class FrmMemberEdit
     private Panel pnlDynamicFields;
     private Button btnSave;
     private Button btnCancel;
+    private CheckBox chkAktifMi;
 
     protected override void Dispose(bool disposing)
     {
@@ -34,6 +35,7 @@ partial class FrmMemberEdit
         pnlDynamicFields = new Panel();
         txtUyeAdiSoyadi = new TextBox();
         lblUyeAdiSoyadi = new Label();
+        chkAktifMi = new CheckBox();
 
         pnlHeader.SuspendLayout();
         pnlFooter.SuspendLayout();
@@ -74,9 +76,20 @@ partial class FrmMemberEdit
         pnlMain.Controls.Add(pnlDynamicFields);
         pnlMain.Controls.Add(txtUyeAdiSoyadi);
         pnlMain.Controls.Add(lblUyeAdiSoyadi);
+        pnlMain.Controls.Add(chkAktifMi);
         pnlMain.Dock = DockStyle.Fill;
         pnlMain.Location = new Point(0, 65);
         pnlMain.Size = new Size(620, 455);
+
+        chkAktifMi.AutoSize = true;
+        chkAktifMi.Checked = true;
+        chkAktifMi.CheckState = CheckState.Checked;
+        chkAktifMi.Location = new Point(195, 62);
+        chkAktifMi.Name = "chkAktifMi";
+        chkAktifMi.Size = new Size(63, 19);
+        chkAktifMi.TabIndex = 2;
+        chkAktifMi.Text = "Aktif";
+        chkAktifMi.UseVisualStyleBackColor = true;
 
         lblUyeAdiSoyadi.Location = new Point(35, 30);
         lblUyeAdiSoyadi.Size = new Size(150, 25);
@@ -92,8 +105,8 @@ partial class FrmMemberEdit
         pnlDynamicFields.AutoScroll = true;
         pnlDynamicFields.BackColor = Color.White;
         pnlDynamicFields.BorderStyle = BorderStyle.FixedSingle;
-        pnlDynamicFields.Location = new Point(20, 80);
-        pnlDynamicFields.Size = new Size(575, 340);
+        pnlDynamicFields.Location = new Point(20, 105);
+        pnlDynamicFields.Size = new Size(575, 320);
 
         AutoScaleDimensions = new SizeF(7F, 15F);
         AutoScaleMode = AutoScaleMode.Font;

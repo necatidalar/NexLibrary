@@ -8,7 +8,10 @@ partial class FrmMembers
     private TextBox txtSearch;
     private Button btnSearch;
     private Button btnRefresh;
+    private Button btnDetail;
     private Button btnAdd;
+    private Button btnEdit;
+    private Button btnDelete;
     private Label lblCount;
     private DataGridView dgvMembers;
 
@@ -26,7 +29,10 @@ partial class FrmMembers
     {
         pnlTop = new Panel();
         lblCount = new Label();
+        btnDelete = new Button();
+        btnEdit = new Button();
         btnAdd = new Button();
+        btnDetail = new Button();
         btnRefresh = new Button();
         btnSearch = new Button();
         txtSearch = new TextBox();
@@ -39,51 +45,109 @@ partial class FrmMembers
 
         pnlTop.BackColor = Color.White;
         pnlTop.Controls.Add(lblCount);
+        pnlTop.Controls.Add(btnDelete);
+        pnlTop.Controls.Add(btnEdit);
         pnlTop.Controls.Add(btnAdd);
+        pnlTop.Controls.Add(btnDetail);
         pnlTop.Controls.Add(btnRefresh);
         pnlTop.Controls.Add(btnSearch);
         pnlTop.Controls.Add(txtSearch);
         pnlTop.Controls.Add(lblTitle);
         pnlTop.Dock = DockStyle.Top;
         pnlTop.Location = new Point(0, 0);
+        pnlTop.Name = "pnlTop";
+        pnlTop.Padding = new Padding(15);
         pnlTop.Size = new Size(980, 115);
+        pnlTop.TabIndex = 0;
 
         lblTitle.AutoSize = true;
         lblTitle.Font = new Font("Segoe UI", 15F, FontStyle.Bold);
         lblTitle.Location = new Point(15, 15);
+        lblTitle.Name = "lblTitle";
+        lblTitle.Size = new Size(73, 28);
+        lblTitle.TabIndex = 0;
         lblTitle.Text = "Üyeler";
 
         txtSearch.Location = new Point(18, 65);
-        txtSearch.PlaceholderText = "Üye ara...";
+        txtSearch.Name = "txtSearch";
+        txtSearch.PlaceholderText = "Üye adı, telefon, okul no ara...";
         txtSearch.Size = new Size(260, 23);
+        txtSearch.TabIndex = 1;
+        txtSearch.KeyDown += txtSearch_KeyDown;
 
         btnSearch.Location = new Point(285, 64);
+        btnSearch.Name = "btnSearch";
         btnSearch.Size = new Size(90, 26);
+        btnSearch.TabIndex = 2;
         btnSearch.Text = "Ara";
+        btnSearch.UseVisualStyleBackColor = true;
         btnSearch.Click += btnSearch_Click;
 
         btnRefresh.Location = new Point(380, 64);
+        btnRefresh.Name = "btnRefresh";
         btnRefresh.Size = new Size(90, 26);
+        btnRefresh.TabIndex = 3;
         btnRefresh.Text = "Yenile";
+        btnRefresh.UseVisualStyleBackColor = true;
         btnRefresh.Click += btnRefresh_Click;
 
+        btnDetail.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+        btnDetail.Location = new Point(550, 63);
+        btnDetail.Name = "btnDetail";
+        btnDetail.Size = new Size(95, 30);
+        btnDetail.TabIndex = 4;
+        btnDetail.Text = "Detay";
+        btnDetail.UseVisualStyleBackColor = true;
+        btnDetail.Click += btnDetail_Click;
+
         btnAdd.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-        btnAdd.Location = new Point(850, 63);
+        btnAdd.Location = new Point(650, 63);
+        btnAdd.Name = "btnAdd";
         btnAdd.Size = new Size(95, 30);
+        btnAdd.TabIndex = 5;
         btnAdd.Text = "Yeni";
+        btnAdd.UseVisualStyleBackColor = true;
         btnAdd.Click += btnAdd_Click;
 
+        btnEdit.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+        btnEdit.Location = new Point(750, 63);
+        btnEdit.Name = "btnEdit";
+        btnEdit.Size = new Size(95, 30);
+        btnEdit.TabIndex = 6;
+        btnEdit.Text = "Düzenle";
+        btnEdit.UseVisualStyleBackColor = true;
+        btnEdit.Click += btnEdit_Click;
+
+        btnDelete.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+        btnDelete.Location = new Point(850, 63);
+        btnDelete.Name = "btnDelete";
+        btnDelete.Size = new Size(95, 30);
+        btnDelete.TabIndex = 7;
+        btnDelete.Text = "Pasif Yap";
+        btnDelete.UseVisualStyleBackColor = true;
+        btnDelete.Click += btnDelete_Click;
+
         lblCount.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+        lblCount.Font = new Font("Segoe UI", 9F);
+        lblCount.ForeColor = Color.DimGray;
         lblCount.Location = new Point(650, 20);
+        lblCount.Name = "lblCount";
         lblCount.Size = new Size(295, 20);
+        lblCount.TabIndex = 8;
         lblCount.Text = "Toplam üye: 0";
         lblCount.TextAlign = ContentAlignment.MiddleRight;
 
         dgvMembers.BackgroundColor = Color.White;
+        dgvMembers.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
         dgvMembers.Dock = DockStyle.Fill;
         dgvMembers.Location = new Point(0, 115);
+        dgvMembers.Name = "dgvMembers";
         dgvMembers.RowHeadersVisible = false;
+        dgvMembers.RowTemplate.Height = 25;
         dgvMembers.Size = new Size(980, 515);
+        dgvMembers.TabIndex = 1;
+        dgvMembers.SelectionChanged += dgvMembers_SelectionChanged;
+        dgvMembers.CellDoubleClick += dgvMembers_CellDoubleClick;
 
         AutoScaleDimensions = new SizeF(7F, 15F);
         AutoScaleMode = AutoScaleMode.Font;
