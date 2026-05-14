@@ -1,0 +1,422 @@
+﻿@model NexLibrary.Web.ViewModels.BookCopies.BookCopiesIndexViewModel
+
+@{
+    ViewData["Title"] = "Kitap Kopyaları";
+
+    var totalBooks = Model.StockSummary.Count;
+    var totalCopies = Model.StockSummary.Sum(x => x.ToplamKopya);
+    var totalAvailable = Model.StockSummary.Sum(x => x.Musait);
+    var totalLoaned = Model.StockSummary.Sum(x => x.Oduncte);
+    var totalOverdue = Model.StockSummary.Sum(x => x.Gecikti);
+    var totalLost = Model.StockSummary.Sum(x => x.Kayip);
+    var totalDamaged = Model.StockSummary.Sum(x => x.Hasarli);
+}
+
+<style>
+    .page-header {
+        background: white;
+        border-radius: 12px;
+        padding: 18px 22px;
+        margin-bottom: 20px;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .page-title {
+        font-size: 24px;
+        font-weight: 700;
+    }
+
+    .page-subtitle {
+        color: #6b7280;
+        margin-top: 4px;
+        font-size: 14px;
+    }
+
+    .btn {
+        border: none;
+        background: #34495e;
+        color: white;
+        padding: 10px 15px;
+        border-radius: 8px;
+        font-weight: 700;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+        .btn:hover {
+            background: #405c78;
+        }
+
+    .btn-light {
+        background: #e5e7eb;
+        color: #111827;
+    }
+
+        .btn-light:hover {
+            background: #d1d5db;
+        }
+
+    .summary-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+        gap: 14px;
+        margin-bottom: 20px;
+    }
+
+    .summary-card {
+        background: white;
+        border-radius: 14px;
+        padding: 16px;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+        border: 1px solid #eef0f3;
+    }
+
+    .summary-value {
+        font-size: 28px;
+        font-weight: 800;
+        margin-bottom: 6px;
+    }
+
+    .summary-title {
+        font-weight: 700;
+        font-size: 14px;
+        margin-bottom: 4px;
+    }
+
+    .summary-desc {
+        color: #6b7280;
+        font-size: 13px;
+    }
+
+    .table-card {
+        background: white;
+        border-radius: 14px;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+        border: 1px solid #eef0f3;
+        overflow: hidden;
+        margin-bottom: 22px;
+    }
+
+    .table-header {
+        padding: 16px 18px;
+        border-bottom: 1px solid #eef0f3;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .table-title {
+        font-size: 18px;
+        font-weight: 700;
+    }
+
+    .table-count {
+        color: #6b7280;
+        font-size: 14px;
+    }
+
+    .table-wrapper {
+        overflow-x: auto;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 950px;
+    }
+
+    th {
+        background: #f9fafb;
+        text-align: left;
+        padding: 12px;
+        font-size: 14px;
+        border-bottom: 1px solid #eef0f3;
+        white-space: nowrap;
+    }
+
+    td {
+        padding: 12px;
+        border-bottom: 1px solid #eef0f3;
+        font-size: 14px;
+        white-space: nowrap;
+    }
+
+    tr.selected-row {
+        background: #eff6ff;
+    }
+
+    tr.stock-warning {
+        background: #fff1f2;
+    }
+
+    .badge {
+        display: inline-block;
+        padding: 5px 9px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 700;
+        background: #edf2f7;
+        color: #374151;
+    }
+
+    .badge-available {
+        background: #dcfce7;
+        color: #166534;
+    }
+
+    .badge-loaned {
+        background: #dbeafe;
+        color: #1d4ed8;
+    }
+
+    .badge-overdue {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    .badge-lost {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .badge-damaged {
+        background: #ffedd5;
+        color: #9a3412;
+    }
+
+    .badge-passive {
+        background: #e5e7eb;
+        color: #374151;
+    }
+
+    .empty-state {
+        padding: 18px;
+        color: #6b7280;
+    }
+</style>
+
+<div class="page-header">
+    <div>
+        <div class="page-title">Kitap Kopyaları / Stok</div>
+        <div class="page-subtitle">Kitapların fiziksel kopya, müsaitlik ve ödünç durumları</div>
+    </div>
+
+    <a class="btn" asp-controller="BookCopies" asp-action="Index">Yenile</a>
+</div>
+
+<div class="summary-cards">
+    <div class="summary-card">
+        <div class="summary-value">@totalBooks</div>
+        <div class="summary-title">Kitap Türü</div>
+        <div class="summary-desc">Stokta kayıtlı kitap</div>
+    </div>
+
+    <div class="summary-card">
+        <div class="summary-value">@totalCopies</div>
+        <div class="summary-title">Toplam Kopya</div>
+        <div class="summary-desc">Fiziksel kitap adedi</div>
+    </div>
+
+    <div class="summary-card">
+        <div class="summary-value">@totalAvailable</div>
+        <div class="summary-title">Müsait</div>
+        <div class="summary-desc">Ödünç verilebilir</div>
+    </div>
+
+    <div class="summary-card">
+        <div class="summary-value">@totalLoaned</div>
+        <div class="summary-title">Ödünçte</div>
+        <div class="summary-desc">Üyelerde bulunan</div>
+    </div>
+
+    <div class="summary-card">
+        <div class="summary-value">@totalOverdue</div>
+        <div class="summary-title">Geciken</div>
+        <div class="summary-desc">İade tarihi geçmiş</div>
+    </div>
+
+    <div class="summary-card">
+        <div class="summary-value">@totalLost / @totalDamaged</div>
+        <div class="summary-title">Kayıp / Hasarlı</div>
+        <div class="summary-desc">Sorunlu kopyalar</div>
+    </div>
+</div>
+
+<div class="table-card">
+    <div class="table-header">
+        <div>
+            <div class="table-title">Stok Özeti</div>
+            <div class="table-count">Toplam kitap: @Model.StockSummary.Count</div>
+        </div>
+    </div>
+
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>Kitap ID</th>
+                    <th>Kitap Adı</th>
+                    <th>Toplam</th>
+                    <th>Müsait</th>
+                    <th>Ödünçte</th>
+                    <th>Gecikti</th>
+                    <th>Kayıp</th>
+                    <th>Hasarlı</th>
+                    <th>Pasif</th>
+                    <th>İşlem</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @if (Model.StockSummary.Count == 0)
+                {
+                    <tr>
+                        <td colspan="10">Stok kaydı bulunamadı.</td>
+                    </tr>
+                }
+                else
+                {
+                    foreach (var item in Model.StockSummary)
+                    {
+                        var selectedRow = Model.SelectedBookId == item.KitapId ? "selected-row" : "";
+                        var warningRow = item.ToplamKopya > 0 && item.Musait == 0 ? "stock-warning" : "";
+                        var rowClass = $"{selectedRow} {warningRow}".Trim();
+
+                        <tr class="@rowClass">
+                            <td>@item.KitapId</td>
+                            <td>@item.KitapAdi</td>
+                            <td>@item.ToplamKopya</td>
+                            <td>
+                                <span class="badge badge-available">@item.Musait</span>
+                            </td>
+                            <td>
+                                <span class="badge badge-loaned">@item.Oduncte</span>
+                            </td>
+                            <td>
+                                <span class="badge badge-overdue">@item.Gecikti</span>
+                            </td>
+                            <td>
+                                <span class="badge badge-lost">@item.Kayip</span>
+                            </td>
+                            <td>
+                                <span class="badge badge-damaged">@item.Hasarli</span>
+                            </td>
+                            <td>
+                                <span class="badge badge-passive">@item.Pasif</span>
+                            </td>
+                            <td>
+                                <a class="btn btn-light"
+                                       asp-controller="BookCopies"
+                                       asp-action="Index"
+                                       asp-route-kitapId="@item.KitapId">
+                                    Kopyaları Göster
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="table-card">
+    <div class="table-header">
+        <div>
+            <div class="table-title">
+                @if (Model.SelectedBookId.HasValue)
+                {
+                    <span>Kopyalar: @(Model.SelectedBookName ?? "-")</span>
+                }
+                else
+                {
+                    <span>Kopyalar</span>
+                }
+            </div>
+
+            <div class="table-count">Kopya sayısı: @Model.Copies.Count</div>
+        </div>
+
+        @if (Model.SelectedBookId.HasValue)
+        {
+            <a class="btn btn-light" asp-controller="BookCopies" asp-action="Index">Seçimi Temizle</a>
+        }
+    </div>
+
+    @if (!Model.SelectedBookId.HasValue)
+    {
+        <div class="empty-state">
+            Kopyaları görmek için yukarıdaki stok özetinden bir kitap seç.
+        </div>
+    }
+    else
+    {
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Kopya ID</th>
+                        <th>Kitap</th>
+                        <th>Barkod</th>
+                        <th>Demirbaş No</th>
+                        <th>Durum</th>
+                        <th>Açıklama</th>
+                        <th>Aktif</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @if (Model.Copies.Count == 0)
+                    {
+                        <tr>
+                            <td colspan="7">Bu kitap için kopya bulunamadı.</td>
+                        </tr>
+                    }
+                    else
+                    {
+                        foreach (var copy in Model.Copies)
+                        {
+                            var badgeClass = copy.Durum switch
+                            {
+                                "Musait" => "badge badge-available",
+                                "Oduncte" => "badge badge-loaned",
+                                "Gecikti" => "badge badge-overdue",
+                                "Kayip" => "badge badge-lost",
+                                "Hasarli" => "badge badge-damaged",
+                                "Pasif" => "badge badge-passive",
+                                _ => "badge"
+                            };
+
+                            var statusText = copy.Durum switch
+                            {
+                                "Musait" => "Müsait",
+                                "Oduncte" => "Ödünçte",
+                                "Gecikti" => "Gecikti",
+                                "Kayip" => "Kayıp",
+                                "Hasarli" => "Hasarlı",
+                                "Pasif" => "Pasif",
+                                _ => copy.Durum
+                            };
+
+                            <tr>
+                                <td>@copy.Id</td>
+                                <td>@copy.KitapAdi</td>
+                                <td>@copy.Barkod</td>
+                                <td>@(copy.DemirbasNo ?? "-")</td>
+                                <td><span class="@badgeClass">@statusText</span></td>
+                                <td>@(copy.Aciklama ?? "-")</td>
+                                <td>@(copy.AktifMi ? "Evet" : "Hayır")</td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
