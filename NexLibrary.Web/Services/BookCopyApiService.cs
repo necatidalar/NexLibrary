@@ -65,4 +65,57 @@ public sealed class BookCopyApiService
             return new List<BookCopyListResponse>();
         }
     }
+
+    public async Task<List<BookCopyListResponse>> GetAvailableByBookIdAsync(
+        int kitapId,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var response = await _httpClient.GetFromJsonAsync<ApiResponse<List<BookCopyListResponse>>>(
+                $"api/book-copies/book/{kitapId}/available",
+                JsonOptions,
+                cancellationToken);
+
+            if (response is null || !response.BasariliMi || response.Veri is null)
+            {
+                return new List<BookCopyListResponse>();
+            }
+
+            return response.Veri;
+        }
+        catch
+        {
+            return new List<BookCopyListResponse>();
+        }
+    }
+
+    public async Task<BookCopyListResponse?> CreateAsync(
+        BookCopyCreateRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var httpResponse = await _httpClient.PostAsJsonAsync(
+                "api/book-copies",
+                request,
+                JsonOptions,
+                cancellationToken);
+
+            var response = await httpResponse.Content.ReadFromJsonAsync<ApiResponse<BookCopyListResponse>>(
+                JsonOptions,
+                cancellationToken);
+
+            if (response is null || !response.BasariliMi)
+            {
+                return null;
+            }
+
+            return response.Veri;
+        }
+        catch
+        {
+            return null;
+        }
+    }
 }

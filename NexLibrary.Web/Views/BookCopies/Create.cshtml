@@ -1,0 +1,234 @@
+﻿@model NexLibrary.Web.ViewModels.BookCopies.BookCopyCreateViewModel
+
+@{
+    ViewData["Title"] = "Yeni Kitap Kopyası";
+}
+
+<style>
+    .page-header {
+        background: white;
+        border-radius: 12px;
+        padding: 18px 22px;
+        margin-bottom: 20px;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .page-title {
+        font-size: 24px;
+        font-weight: 700;
+    }
+
+    .page-subtitle {
+        color: #6b7280;
+        margin-top: 4px;
+        font-size: 14px;
+    }
+
+    .btn {
+        border: none;
+        background: #34495e;
+        color: white;
+        padding: 10px 15px;
+        border-radius: 8px;
+        font-weight: 700;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+        .btn:hover {
+            background: #405c78;
+        }
+
+    .btn-light {
+        background: #e5e7eb;
+        color: #111827;
+    }
+
+        .btn-light:hover {
+            background: #d1d5db;
+        }
+
+    .alert-error {
+        background: #fee2e2;
+        color: #991b1b;
+        border: 1px solid #fecaca;
+        padding: 14px 16px;
+        border-radius: 10px;
+        margin-bottom: 18px;
+    }
+
+    .form-card {
+        background: white;
+        border-radius: 14px;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+        border: 1px solid #eef0f3;
+        overflow: hidden;
+    }
+
+    .card-header {
+        padding: 16px 18px;
+        border-bottom: 1px solid #eef0f3;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .card-title {
+        font-size: 18px;
+        font-weight: 700;
+    }
+
+    .card-count {
+        color: #6b7280;
+        font-size: 14px;
+    }
+
+    .card-body {
+        padding: 18px;
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(240px, 1fr));
+        gap: 16px;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 7px;
+    }
+
+        .form-group.full {
+            grid-column: 1 / -1;
+        }
+
+        .form-group label {
+            font-size: 13px;
+            font-weight: 700;
+            color: #374151;
+        }
+
+    .input,
+    .select,
+    .textarea {
+        width: 100%;
+        padding: 11px 12px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        font-size: 14px;
+        box-sizing: border-box;
+    }
+
+    .textarea {
+        min-height: 95px;
+        resize: vertical;
+    }
+
+    .field-help {
+        font-size: 12px;
+        color: #6b7280;
+    }
+
+    .form-actions {
+        margin-top: 22px;
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+    }
+
+    @@media (max-width: 800px) {
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<div class="page-header">
+    <div>
+        <div class="page-title">Yeni Kitap Kopyası</div>
+        <div class="page-subtitle">Seçilen kitaba fiziksel kopya, barkod ve demirbaş bilgisi ekle</div>
+    </div>
+
+    <a class="btn btn-light" asp-controller="BookCopies" asp-action="Index">Listeye Dön</a>
+</div>
+
+@if (TempData["ErrorMessage"] is not null)
+{
+    <div class="alert-error">@TempData["ErrorMessage"]</div>
+}
+
+<div class="form-card">
+    <div class="card-header">
+        <div class="card-title">Kopya Bilgileri</div>
+        <div class="card-count">Kitap sayısı: @Model.Books.Count</div>
+    </div>
+
+    <div class="card-body">
+        <form method="post" asp-controller="BookCopies" asp-action="Create">
+            @Html.AntiForgeryToken()
+
+            <div class="form-grid">
+                <div class="form-group full">
+                    <label>Kitap *</label>
+                    <select class="select" asp-for="KitapId" required>
+                        <option value="">Kitap seçiniz</option>
+
+                        @foreach (var book in Model.Books)
+                        {
+                            if (book.KitapId == Model.KitapId)
+                            {
+                                <option value="@book.KitapId" selected>
+                                    @book.KitapAdi — Toplam: @book.ToplamKopya / Müsait: @book.Musait
+                                </option>
+                            }
+                            else
+                            {
+                                <option value="@book.KitapId">
+                                    @book.KitapAdi — Toplam: @book.ToplamKopya / Müsait: @book.Musait
+                                </option>
+                            }
+                        }
+                    </select>
+                    <div class="field-help">Kopya eklenecek kitabı seç.</div>
+                </div>
+
+                <div class="form-group">
+                    <label>Barkod *</label>
+                    <input class="input"
+                           asp-for="Barkod"
+                           maxlength="100"
+                           placeholder="Örn: BK-1-001"
+                           required />
+                    <div class="field-help">Barkod benzersiz olmalıdır.</div>
+                </div>
+
+                <div class="form-group">
+                    <label>Demirbaş No</label>
+                    <input class="input"
+                           asp-for="DemirbasNo"
+                           maxlength="100"
+                           placeholder="Örn: DMR-2026-001" />
+                    <div class="field-help">İsteğe bağlı fiziksel demirbaş numarası.</div>
+                </div>
+
+                <div class="form-group full">
+                    <label>Açıklama</label>
+                    <textarea class="textarea"
+                              asp-for="Aciklama"
+                              placeholder="Kopya hakkında not yazabilirsin."></textarea>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <a class="btn btn-light" asp-controller="BookCopies" asp-action="Index">İptal</a>
+                <button class="btn" type="submit">Kaydet</button>
+            </div>
+        </form>
+    </div>
+</div>
