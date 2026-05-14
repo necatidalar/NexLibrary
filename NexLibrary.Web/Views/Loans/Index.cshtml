@@ -63,28 +63,40 @@
         cursor: pointer;
         text-decoration: none;
         display: inline-block;
+        font-size: 14px;
     }
 
-    .btn:hover {
-        background: #405c78;
-    }
+        .btn:hover {
+            background: #405c78;
+        }
 
     .btn-light {
         background: #e5e7eb;
         color: #111827;
     }
 
-    .btn-light:hover {
-        background: #d1d5db;
-    }
+        .btn-light:hover {
+            background: #d1d5db;
+        }
 
     .btn-danger {
         background: #991b1b;
     }
 
-    .btn-danger:hover {
-        background: #7f1d1d;
+        .btn-danger:hover {
+            background: #7f1d1d;
+        }
+
+    .btn-return {
+        background: #166534;
+        color: white;
+        padding: 8px 12px;
+        font-size: 13px;
     }
+
+        .btn-return:hover {
+            background: #14532d;
+        }
 
     .alert {
         background: #fff3cd;
@@ -128,7 +140,7 @@
     table {
         width: 100%;
         border-collapse: collapse;
-        min-width: 1100px;
+        min-width: 1200px;
     }
 
     th {
@@ -145,6 +157,7 @@
         border-bottom: 1px solid #eef0f3;
         font-size: 14px;
         white-space: nowrap;
+        vertical-align: middle;
     }
 
     tr.row-overdue {
@@ -190,6 +203,10 @@
         color: #374151;
     }
 
+    .return-form {
+        margin: 0;
+    }
+
     .pagination {
         display: flex;
         justify-content: space-between;
@@ -216,13 +233,30 @@
         <div class="page-subtitle">Kitap, üye, barkod ve durum bilgileriyle ödünç kayıtları</div>
     </div>
 
-    <a class="btn" asp-controller="Loans" asp-action="Index">Yenile</a>
+    <div style="display: flex; gap: 10px;">
+        <a class="btn btn-light" asp-controller="Loans" asp-action="Index">Yenile</a>
+        <a class="btn" asp-controller="Loans" asp-action="Create">Yeni Ödünç</a>
+    </div>
 </div>
 
 @if (ViewBag.ErrorMessage is not null)
 {
     <div class="alert">
         @ViewBag.ErrorMessage
+    </div>
+}
+
+@if (TempData["SuccessMessage"] is not null)
+{
+    <div class="alert" style="background:#dcfce7;color:#166534;border-color:#bbf7d0;">
+        @TempData["SuccessMessage"]
+    </div>
+}
+
+@if (TempData["ErrorMessage"] is not null)
+{
+    <div class="alert" style="background:#fee2e2;color:#991b1b;border-color:#fecaca;">
+        @TempData["ErrorMessage"]
     </div>
 }
 
@@ -283,6 +317,7 @@
                     <th>İade Tarihi</th>
                     <th>Durum</th>
                     <th>Aktif</th>
+                    <th>İşlem</th>
                 </tr>
             </thead>
 
@@ -290,7 +325,7 @@
                 @if (Model.Loans.Items.Count == 0)
                 {
                     <tr>
-                        <td colspan="9">Ödünç kaydı bulunamadı.</td>
+                        <td colspan="10">Ödünç kaydı bulunamadı.</td>
                     </tr>
                 }
                 else
@@ -333,6 +368,27 @@
                             <td>@(loan.IadeTarihi?.ToString("dd.MM.yyyy") ?? "-")</td>
                             <td><span class="@badgeClass">@statusText</span></td>
                             <td>@(loan.AktifMi ? "Evet" : "Hayır")</td>
+                            <td>
+                                @if (loan.Durum == "Oduncte" || loan.Durum == "Gecikti")
+                                {
+                                    <form class="return-form"
+                                          method="post"
+                                          asp-controller="Loans"
+                                          asp-action="Return"
+                                          asp-route-id="@loan.Id"
+                                          onsubmit="return confirm('Bu kitap iade alınacak. Devam edilsin mi?');">
+                                        @Html.AntiForgeryToken()
+
+                                        <button class="btn btn-return" type="submit">
+                                            İade Al
+                                        </button>
+                                    </form>
+                                }
+                                else
+                                {
+                                    <span>-</span>
+                                }
+                            </td>
                         </tr>
                     }
                 }

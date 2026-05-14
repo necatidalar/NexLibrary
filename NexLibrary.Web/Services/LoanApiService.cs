@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Net.Http.Json;
+using System.Text.Json;
 using NexLibrary.Contracts.Common;
 using NexLibrary.Contracts.Loans;
 
@@ -38,12 +39,9 @@ public sealed class LoanApiService
                 JsonOptions,
                 cancellationToken);
 
-            if (response is null || !response.BasariliMi)
-            {
-                return null;
-            }
-
-            return response.Veri;
+            return response is null || !response.BasariliMi
+                ? null
+                : response.Veri;
         }
         catch
         {
@@ -65,12 +63,67 @@ public sealed class LoanApiService
                 JsonOptions,
                 cancellationToken);
 
-            if (response is null || !response.BasariliMi)
-            {
-                return null;
-            }
+            return response is null || !response.BasariliMi
+                ? null
+                : response.Veri;
+        }
+        catch
+        {
+            return null;
+        }
+    }
 
-            return response.Veri;
+    public async Task<LoanDetailResponse?> CreateAsync(
+        LoanCreateRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var httpResponse = await _httpClient.PostAsJsonAsync(
+                "api/loans",
+                request,
+                JsonOptions,
+                cancellationToken);
+
+            var response = await httpResponse.Content.ReadFromJsonAsync<ApiResponse<LoanDetailResponse>>(
+                JsonOptions,
+                cancellationToken);
+
+            return response is null || !response.BasariliMi
+                ? null
+                : response.Veri;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    public async Task<LoanDetailResponse?> ReturnAsync(
+        int id,
+        LoanReturnRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            using var httpRequest = new HttpRequestMessage(
+                HttpMethod.Patch,
+                $"api/loans/{id}/return")
+            {
+                Content = JsonContent.Create(request, options: JsonOptions)
+            };
+
+            using var httpResponse = await _httpClient.SendAsync(
+                httpRequest,
+                cancellationToken);
+
+            var response = await httpResponse.Content.ReadFromJsonAsync<ApiResponse<LoanDetailResponse>>(
+                JsonOptions,
+                cancellationToken);
+
+            return response is null || !response.BasariliMi
+                ? null
+                : response.Veri;
         }
         catch
         {
@@ -82,20 +135,21 @@ public sealed class LoanApiService
     {
         try
         {
-            using var request = new HttpRequestMessage(HttpMethod.Patch, "api/loans/mark-overdue");
+            using var request = new HttpRequestMessage(
+                HttpMethod.Patch,
+                "api/loans/mark-overdue");
 
-            using var httpResponse = await _httpClient.SendAsync(request, cancellationToken);
+            using var httpResponse = await _httpClient.SendAsync(
+                request,
+                cancellationToken);
 
             var response = await httpResponse.Content.ReadFromJsonAsync<ApiResponse<int>>(
                 JsonOptions,
                 cancellationToken);
 
-            if (response is null || !response.BasariliMi)
-            {
-                return 0;
-            }
-
-            return response.Veri;
+            return response is null || !response.BasariliMi
+                ? 0
+                : response.Veri;
         }
         catch
         {
