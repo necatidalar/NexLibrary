@@ -12,4 +12,12 @@ public sealed class MembersIndexViewModel
     public int PageSize { get; set; } = 20;
 
     public PagedResponse<MemberListResponse> Members { get; set; } = new();
+
+    public List<int> PageSizeOptions { get; set; } = new()
+    {
+        10,
+        20,
+        50,
+        100
+    };
 }

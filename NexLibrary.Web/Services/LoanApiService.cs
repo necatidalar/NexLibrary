@@ -156,4 +156,25 @@ public sealed class LoanApiService
             return 0;
         }
     }
+
+    public async Task<LoanDetailResponse?> GetByIdAsync(
+    int id,
+    CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var response = await _httpClient.GetFromJsonAsync<ApiResponse<LoanDetailResponse>>(
+                $"api/loans/{id}",
+                JsonOptions,
+                cancellationToken);
+
+            return response is null || !response.BasariliMi
+                ? null
+                : response.Veri;
+        }
+        catch
+        {
+            return null;
+        }
+    }
 }

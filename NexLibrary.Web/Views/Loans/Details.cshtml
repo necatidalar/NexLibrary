@@ -1,0 +1,208 @@
+﻿@model NexLibrary.Web.ViewModels.Loans.LoanDetailViewModel
+
+@{
+    ViewData["Title"] = "Ödünç Detay";
+    var loan = Model.Loan;
+}
+
+<style>
+    .page-header, .card {
+        background: white;
+        border-radius: 14px;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+        border: 1px solid #eef0f3;
+        margin-bottom: 20px;
+    }
+
+    .page-header {
+        padding: 18px 22px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .page-title {
+        font-size: 24px;
+        font-weight: 700;
+    }
+
+    .page-subtitle {
+        color: #6b7280;
+        margin-top: 4px;
+        font-size: 14px;
+    }
+
+    .btn {
+        border: none;
+        background: #34495e;
+        color: white;
+        padding: 10px 15px;
+        border-radius: 8px;
+        font-weight: 700;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 14px;
+    }
+
+    .btn-light {
+        background: #e5e7eb;
+        color: #111827;
+    }
+
+    .card-header {
+        padding: 16px 18px;
+        border-bottom: 1px solid #eef0f3;
+        font-size: 18px;
+        font-weight: 700;
+    }
+
+    .card-body {
+        padding: 18px;
+    }
+
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(220px, 1fr));
+        gap: 14px;
+    }
+
+    .info-item {
+        background: #f9fafb;
+        border: 1px solid #eef0f3;
+        border-radius: 10px;
+        padding: 12px;
+    }
+
+    .label {
+        color: #6b7280;
+        font-size: 13px;
+        font-weight: 700;
+        margin-bottom: 5px;
+    }
+
+    .value {
+        font-size: 15px;
+        font-weight: 600;
+    }
+
+    .badge {
+        display: inline-block;
+        padding: 5px 9px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 700;
+        background: #edf2f7;
+    }
+
+    .badge-blue {
+        background: #dbeafe;
+        color: #1d4ed8;
+    }
+
+    .badge-green {
+        background: #dcfce7;
+        color: #166534;
+    }
+
+    .badge-red {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    .badge-gray {
+        background: #e5e7eb;
+        color: #374151;
+    }
+</style>
+
+<div class="page-header">
+    <div>
+        <div class="page-title">Ödünç Detay</div>
+        <div class="page-subtitle">@loan.KitapAdi - @loan.UyeAdiSoyadi</div>
+    </div>
+
+    <a class="btn btn-light" asp-controller="Loans" asp-action="Index">Listeye Dön</a>
+</div>
+
+<div class="card">
+    <div class="card-header">Ödünç Bilgileri</div>
+
+    <div class="card-body">
+        <div class="info-grid">
+            <div class="info-item">
+                <div class="label">Ödünç ID</div>
+                <div class="value">@loan.Id</div>
+            </div>
+
+            <div class="info-item">
+                <div class="label">Kitap</div>
+                <div class="value">@loan.KitapAdi</div>
+            </div>
+
+            <div class="info-item">
+                <div class="label">Kitap Barkod</div>
+                <div class="value">@(loan.KitapKopyaBarkod ?? "-")</div>
+            </div>
+
+            <div class="info-item">
+                <div class="label">Demirbaş No</div>
+                <div class="value">@(loan.KitapKopyaDemirbasNo ?? "-")</div>
+            </div>
+
+            <div class="info-item">
+                <div class="label">Üye</div>
+                <div class="value">@loan.UyeAdiSoyadi</div>
+            </div>
+
+            <div class="info-item">
+                <div class="label">Durum</div>
+                <div class="value">
+                    @{
+                        var badgeClass = loan.Durum switch
+                        {
+                            "Oduncte" => "badge badge-blue",
+                            "IadeEdildi" => "badge badge-green",
+                            "Gecikti" => "badge badge-red",
+                            "IptalEdildi" => "badge badge-gray",
+                            _ => "badge"
+                        };
+                    }
+
+                    <span class="@badgeClass">@loan.Durum</span>
+                </div>
+            </div>
+
+            <div class="info-item">
+                <div class="label">Veriliş Tarihi</div>
+                <div class="value">@loan.VerilisTarihi.ToString("dd.MM.yyyy HH:mm")</div>
+            </div>
+
+            <div class="info-item">
+                <div class="label">Planlanan İade</div>
+                <div class="value">@loan.PlanlananIadeTarihi.ToString("dd.MM.yyyy")</div>
+            </div>
+
+            <div class="info-item">
+                <div class="label">İade Tarihi</div>
+                <div class="value">@(loan.IadeTarihi?.ToString("dd.MM.yyyy HH:mm") ?? "-")</div>
+            </div>
+
+            <div class="info-item">
+                <div class="label">Aktif Mi?</div>
+                <div class="value">@(loan.AktifMi ? "Evet" : "Hayır")</div>
+            </div>
+
+            <div class="info-item">
+                <div class="label">Açıklama</div>
+                <div class="value">@(loan.Aciklama ?? "-")</div>
+            </div>
+
+            <div class="info-item">
+                <div class="label">Oluşturma Tarihi</div>
+                <div class="value">@loan.OlusturmaTarihi.ToString("dd.MM.yyyy HH:mm")</div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -64,6 +64,7 @@
         text-decoration: none;
         display: inline-block;
         font-size: 14px;
+        white-space: nowrap;
     }
 
         .btn:hover {
@@ -140,7 +141,7 @@
     table {
         width: 100%;
         border-collapse: collapse;
-        min-width: 1200px;
+        min-width: 1250px;
     }
 
     th {
@@ -225,6 +226,30 @@
         display: flex;
         gap: 8px;
     }
+
+    .action-buttons {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+    }
+
+    @@media (max-width: 800px) {
+        .page-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .search-box {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .table-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 8px;
+        }
+    }
 </style>
 
 <div class="page-header">
@@ -267,10 +292,47 @@
            value="@Model.Search"
            placeholder="Kitap adı, üye adı, barkod veya demirbaş no ara..." />
 
-    <input type="hidden" name="pageSize" value="@Model.PageSize" />
-    <input type="hidden" name="overdueOnly" value="false" />
+    <select class="search-input" style="max-width: 180px;" name="durum">
+        @foreach (var item in Model.Durumlar)
+        {
+            var text = item switch
+            {
+                "Tumu" => "Tüm Durumlar",
+                "Oduncte" => "Ödünçte",
+                "Gecikti" => "Gecikti",
+                "IadeEdildi" => "İade Edildi",
+                "IptalEdildi" => "İptal Edildi",
+                _ => item
+            };
 
-    <button class="btn" type="submit">Ara</button>
+            if (Model.Durum == item)
+            {
+                <option value="@item" selected>@text</option>
+            }
+            else
+            {
+                <option value="@item">@text</option>
+            }
+        }
+    </select>
+
+    <select class="search-input" style="max-width: 130px;" name="pageSize">
+        @foreach (var size in Model.PageSizeOptions)
+        {
+            if (Model.PageSize == size)
+            {
+                <option value="@size" selected>@size kayıt</option>
+            }
+            else
+            {
+                <option value="@size">@size kayıt</option>
+            }
+        }
+    </select>
+
+    <input type="hidden" name="overdueOnly" value="@Model.OverdueOnly.ToString().ToLowerInvariant()" />
+
+    <button class="btn" type="submit">Filtrele</button>
 
     <a class="btn btn-light" asp-controller="Loans" asp-action="Index">Temizle</a>
 
@@ -369,25 +431,30 @@
                             <td><span class="@badgeClass">@statusText</span></td>
                             <td>@(loan.AktifMi ? "Evet" : "Hayır")</td>
                             <td>
-                                @if (loan.Durum == "Oduncte" || loan.Durum == "Gecikti")
-                                {
-                                    <form class="return-form"
-                                          method="post"
-                                          asp-controller="Loans"
-                                          asp-action="Return"
-                                          asp-route-id="@loan.Id"
-                                          onsubmit="return confirm('Bu kitap iade alınacak. Devam edilsin mi?');">
-                                        @Html.AntiForgeryToken()
+                                <div class="action-buttons">
+                                    <a class="btn btn-light"
+                                           asp-controller="Loans"
+                                           asp-action="Details"
+                                           asp-route-id="@loan.Id">
+                                        Detay
+                                    </a>
 
-                                        <button class="btn btn-return" type="submit">
-                                            İade Al
-                                        </button>
-                                    </form>
-                                }
-                                else
-                                {
-                                    <span>-</span>
-                                }
+                                    @if (loan.Durum == "Oduncte" || loan.Durum == "Gecikti")
+                                    {
+                                        <form class="return-form"
+                                              method="post"
+                                              asp-controller="Loans"
+                                              asp-action="Return"
+                                              asp-route-id="@loan.Id"
+                                              onsubmit="return confirm('Bu kitap iade alınacak. Devam edilsin mi?');">
+                                            @Html.AntiForgeryToken()
+
+                                            <button class="btn btn-return" type="submit">
+                                                İade Al
+                                            </button>
+                                        </form>
+                                    }
+                                </div>
                             </td>
                         </tr>
                     }
@@ -408,6 +475,18 @@
                        asp-controller="Loans"
                        asp-action="Index"
                        asp-route-search="@Model.Search"
+                       asp-route-durum="@Model.Durum"
+                       asp-route-overdueOnly="@Model.OverdueOnly"
+                       asp-route-pageNumber="1"
+                       asp-route-pageSize="@Model.PageSize">
+                    İlk
+                </a>
+
+                <a class="btn btn-light"
+                       asp-controller="Loans"
+                       asp-action="Index"
+                       asp-route-search="@Model.Search"
+                       asp-route-durum="@Model.Durum"
                        asp-route-overdueOnly="@Model.OverdueOnly"
                        asp-route-pageNumber="@(Model.Loans.PageNumber - 1)"
                        asp-route-pageSize="@Model.PageSize">
@@ -421,10 +500,22 @@
                        asp-controller="Loans"
                        asp-action="Index"
                        asp-route-search="@Model.Search"
+                       asp-route-durum="@Model.Durum"
                        asp-route-overdueOnly="@Model.OverdueOnly"
                        asp-route-pageNumber="@(Model.Loans.PageNumber + 1)"
                        asp-route-pageSize="@Model.PageSize">
                     Sonraki
+                </a>
+
+                <a class="btn"
+                       asp-controller="Loans"
+                       asp-action="Index"
+                       asp-route-search="@Model.Search"
+                       asp-route-durum="@Model.Durum"
+                       asp-route-overdueOnly="@Model.OverdueOnly"
+                       asp-route-pageNumber="@totalPages"
+                       asp-route-pageSize="@Model.PageSize">
+                    Son
                 </a>
             }
         </div>

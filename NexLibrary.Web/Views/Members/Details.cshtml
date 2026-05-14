@@ -1,0 +1,257 @@
+﻿@model NexLibrary.Web.ViewModels.Members.MemberDetailViewModel
+
+@{
+    ViewData["Title"] = "Üye Detay";
+
+    var dynamicValues = Model.Member.DinamikAlanlar ?? new();
+}
+
+<style>
+    .page-header, .card {
+        background: white;
+        border-radius: 14px;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+        border: 1px solid #eef0f3;
+        margin-bottom: 20px;
+    }
+
+    .page-header {
+        padding: 18px 22px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .page-title {
+        font-size: 24px;
+        font-weight: 700;
+    }
+
+    .page-subtitle {
+        color: #6b7280;
+        margin-top: 4px;
+        font-size: 14px;
+    }
+
+    .btn {
+        border: none;
+        background: #34495e;
+        color: white;
+        padding: 10px 15px;
+        border-radius: 8px;
+        font-weight: 700;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 14px;
+    }
+
+    .btn-light {
+        background: #e5e7eb;
+        color: #111827;
+    }
+
+    .card-header {
+        padding: 16px 18px;
+        border-bottom: 1px solid #eef0f3;
+        font-size: 18px;
+        font-weight: 700;
+    }
+
+    .card-body {
+        padding: 18px;
+    }
+
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(220px, 1fr));
+        gap: 14px;
+    }
+
+    .info-item {
+        background: #f9fafb;
+        border: 1px solid #eef0f3;
+        border-radius: 10px;
+        padding: 12px;
+    }
+
+    .label {
+        color: #6b7280;
+        font-size: 13px;
+        font-weight: 700;
+        margin-bottom: 5px;
+    }
+
+    .value {
+        font-size: 15px;
+        font-weight: 600;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 900px;
+    }
+
+    th, td {
+        padding: 12px;
+        border-bottom: 1px solid #eef0f3;
+        text-align: left;
+        white-space: nowrap;
+    }
+
+    th {
+        background: #f9fafb;
+    }
+
+    .table-wrapper {
+        overflow-x: auto;
+    }
+
+    .badge {
+        display: inline-block;
+        padding: 5px 9px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 700;
+        background: #edf2f7;
+    }
+
+    .badge-ok {
+        background: #dcfce7;
+        color: #166534;
+    }
+
+    .badge-danger {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+</style>
+
+<div class="page-header">
+    <div>
+        <div class="page-title">Üye Detay</div>
+        <div class="page-subtitle">@Model.Member.UyeAdiSoyadi</div>
+    </div>
+
+    <div style="display:flex; gap:10px;">
+        <a class="btn btn-light" asp-controller="Members" asp-action="Index">Listeye Dön</a>
+        <a class="btn" asp-controller="Members" asp-action="Edit" asp-route-id="@Model.Member.Id">Düzenle</a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">Temel Bilgiler</div>
+
+    <div class="card-body">
+        <div class="info-grid">
+            <div class="info-item">
+                <div class="label">Üye ID</div>
+                <div class="value">@Model.Member.Id</div>
+            </div>
+
+            <div class="info-item">
+                <div class="label">Üye Adı Soyadı</div>
+                <div class="value">@Model.Member.UyeAdiSoyadi</div>
+            </div>
+
+            <div class="info-item">
+                <div class="label">Durum</div>
+                <div class="value">
+                    @if (Model.Member.AktifMi)
+                    {
+                        <span class="badge badge-ok">Aktif</span>
+                    }
+                    else
+                    {
+                        <span class="badge badge-danger">Pasif</span>
+                    }
+                </div>
+            </div>
+
+            <div class="info-item">
+                <div class="label">Oluşturma Tarihi</div>
+                <div class="value">@Model.Member.OlusturmaTarihi.ToString("dd.MM.yyyy HH:mm")</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">Dinamik Alanlar</div>
+
+    <div class="card-body">
+        @if (dynamicValues.Count == 0)
+        {
+            <div>Dinamik alan değeri bulunamadı.</div>
+        }
+        else
+        {
+            <div class="info-grid">
+                @foreach (var item in dynamicValues)
+                {
+                    <div class="info-item">
+                        <div class="label">@item.AlanKodu</div>
+                        <div class="value">@(item.Deger ?? "-")</div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">Üyenin Ödünç Geçmişi</div>
+
+    <div class="card-body">
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Kitap</th>
+                        <th>Barkod</th>
+                        <th>Veriliş</th>
+                        <th>Planlanan İade</th>
+                        <th>İade</th>
+                        <th>Durum</th>
+                        <th>İşlem</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @if (Model.Loans.Count == 0)
+                    {
+                        <tr>
+                            <td colspan="8">Bu üyeye ait ödünç kaydı bulunamadı.</td>
+                        </tr>
+                    }
+                    else
+                    {
+                        foreach (var loan in Model.Loans)
+                        {
+                            <tr>
+                                <td>@loan.Id</td>
+                                <td>@loan.KitapAdi</td>
+                                <td>@(loan.KitapKopyaBarkod ?? "-")</td>
+                                <td>@loan.VerilisTarihi.ToString("dd.MM.yyyy")</td>
+                                <td>@loan.PlanlananIadeTarihi.ToString("dd.MM.yyyy")</td>
+                                <td>@(loan.IadeTarihi?.ToString("dd.MM.yyyy") ?? "-")</td>
+                                <td>@loan.Durum</td>
+                                <td>
+                                    <a class="btn btn-light"
+                                           asp-controller="Loans"
+                                           asp-action="Details"
+                                           asp-route-id="@loan.Id">
+                                        Detay
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

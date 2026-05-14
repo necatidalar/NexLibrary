@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using NexLibrary.Contracts.Common;
 using NexLibrary.Contracts.DynamicForms;
+using NexLibrary.Contracts.Loans;
 using NexLibrary.Contracts.Members;
 using NexLibrary.Web.Services;
 using NexLibrary.Web.ViewModels.Members;
@@ -318,5 +319,55 @@ public sealed class MembersController : Controller
         }
 
         return values;
+    }
+
+    public async Task<IActionResult> Details(
+    int id,
+    CancellationToken cancellationToken = default)
+    {
+        if (id <= 0)
+        {
+            TempData["ErrorMessage"] = "Geçersiz üye bilgisi.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        var member = await _memberApiService.GetByIdAsync(id, cancellationToken);
+
+        if (member is null)
+        {
+            TempData["ErrorMessage"] = "Üye bulunamadı.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        var loans = new List<LoanListResponse>();
+
+        try
+        {
+            var loanApiService = HttpContext.RequestServices
+                .GetRequiredService<LoanApiService>();
+
+            var loanResult = await loanApiService.GetPagedAsync(
+                1,
+                1000,
+                member.UyeAdiSoyadi,
+                cancellationToken);
+
+            loans = loanResult?.Items
+                .Where(x => x.UyeId == member.Id)
+                .OrderByDescending(x => x.Id)
+                .ToList() ?? new List<LoanListResponse>();
+        }
+        catch
+        {
+            loans = new List<LoanListResponse>();
+        }
+
+        var model = new MemberDetailViewModel
+        {
+            Member = member,
+            Loans = loans
+        };
+
+        return View(model);
     }
 }

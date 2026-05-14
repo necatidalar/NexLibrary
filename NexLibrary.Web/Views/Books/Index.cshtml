@@ -127,7 +127,7 @@
     table {
         width: 100%;
         border-collapse: collapse;
-        min-width: 1000px;
+        min-width: 1100px;
     }
 
     th {
@@ -204,6 +204,7 @@
         .table-header {
             flex-direction: column;
             align-items: flex-start;
+            gap: 8px;
         }
     }
 </style>
@@ -248,7 +249,19 @@
            value="@Model.Search"
            placeholder="Kitap adı, barkod, raf no veya dinamik alan ara..." />
 
-    <input type="hidden" name="pageSize" value="@Model.PageSize" />
+    <select class="search-input" style="max-width: 130px;" name="pageSize">
+        @foreach (var size in Model.PageSizeOptions)
+        {
+            if (Model.PageSize == size)
+            {
+                <option value="@size" selected>@size kayıt</option>
+            }
+            else
+            {
+                <option value="@size">@size kayıt</option>
+            }
+        }
+    </select>
 
     <button class="btn" type="submit">Ara</button>
 
@@ -318,6 +331,13 @@
                                 <div class="action-buttons">
                                     <a class="btn btn-light"
                                            asp-controller="Books"
+                                           asp-action="Details"
+                                           asp-route-id="@book.Id">
+                                        Detay
+                                    </a>
+
+                                    <a class="btn btn-light"
+                                           asp-controller="Books"
                                            asp-action="Edit"
                                            asp-route-id="@book.Id">
                                         Düzenle
@@ -343,6 +363,15 @@
                        asp-controller="Books"
                        asp-action="Index"
                        asp-route-search="@Model.Search"
+                       asp-route-pageNumber="1"
+                       asp-route-pageSize="@Model.PageSize">
+                    İlk
+                </a>
+
+                <a class="btn btn-light"
+                       asp-controller="Books"
+                       asp-action="Index"
+                       asp-route-search="@Model.Search"
                        asp-route-pageNumber="@(Model.Books.PageNumber - 1)"
                        asp-route-pageSize="@Model.PageSize">
                     Önceki
@@ -358,6 +387,15 @@
                        asp-route-pageNumber="@(Model.Books.PageNumber + 1)"
                        asp-route-pageSize="@Model.PageSize">
                     Sonraki
+                </a>
+
+                <a class="btn"
+                       asp-controller="Books"
+                       asp-action="Index"
+                       asp-route-search="@Model.Search"
+                       asp-route-pageNumber="@totalPages"
+                       asp-route-pageSize="@Model.PageSize">
+                    Son
                 </a>
             }
         </div>

@@ -428,6 +428,7 @@
                         <th>Durum</th>
                         <th>Açıklama</th>
                         <th>Aktif</th>
+                        <th>İşlem</th>
                     </tr>
                 </thead>
 
@@ -435,7 +436,7 @@
                     @if (Model.Copies.Count == 0)
                     {
                         <tr>
-                            <td colspan="7">Bu kitap için kopya bulunamadı.</td>
+                            <td colspan="8">Bu kitap için kopya bulunamadı.</td>
                         </tr>
                     }
                     else
@@ -472,6 +473,15 @@
                                 <td><span class="@badgeClass">@statusText</span></td>
                                 <td>@(copy.Aciklama ?? "-")</td>
                                 <td>@(copy.AktifMi ? "Evet" : "Hayır")</td>
+                                <td>
+                                    <a class="btn btn-light"
+                                           asp-controller="BookCopies"
+                                           asp-action="Details"
+                                           asp-route-kitapId="@copy.KitapId"
+                                           asp-route-copyId="@copy.Id">
+                                        Detay
+                                    </a>
+                                </td>
                             </tr>
                         }
                     }

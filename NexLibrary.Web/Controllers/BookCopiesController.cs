@@ -117,4 +117,39 @@ public sealed class BookCopiesController : Controller
     {
         return $"BK-{kitapId}-{DateTime.Now:yyyyMMddHHmmss}";
     }
+
+    public async Task<IActionResult> Details(
+    int kitapId,
+    int copyId,
+    CancellationToken cancellationToken = default)
+    {
+        if (kitapId <= 0 || copyId <= 0)
+        {
+            TempData["ErrorMessage"] = "Geçersiz kitap kopyası bilgisi.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        var copies = await _bookCopyApiService.GetByBookIdAsync(
+            kitapId,
+            cancellationToken);
+
+        var copy = copies.FirstOrDefault(x => x.Id == copyId);
+
+        if (copy is null)
+        {
+            TempData["ErrorMessage"] = "Kitap kopyası bulunamadı.";
+            return RedirectToAction(nameof(Index), new { kitapId });
+        }
+
+        var model = new BookCopyDetailViewModel
+        {
+            Copy = copy,
+            OtherCopies = copies
+                .Where(x => x.Id != copyId)
+                .OrderBy(x => x.Barkod)
+                .ToList()
+        };
+
+        return View(model);
+    }
 }

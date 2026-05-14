@@ -28,6 +28,7 @@ public sealed class LoansController : Controller
     public async Task<IActionResult> Index(
         string? search = null,
         bool overdueOnly = false,
+        string? durum = null,
         int pageNumber = 1,
         int pageSize = 20,
         CancellationToken cancellationToken = default)
@@ -68,10 +69,18 @@ public sealed class LoansController : Controller
             };
         }
 
+        if (!string.IsNullOrWhiteSpace(durum) && durum != "Tumu")
+        {
+            loans.Items = loans.Items
+                .Where(x => x.Durum == durum)
+                .ToList();
+        }
+
         var model = new LoansIndexViewModel
         {
             Search = search,
             OverdueOnly = overdueOnly,
+            Durum = string.IsNullOrWhiteSpace(durum) ? "Tumu" : durum,
             PageNumber = pageNumber,
             PageSize = pageSize,
             Loans = loans
@@ -177,6 +186,32 @@ public sealed class LoansController : Controller
         }
 
         return RedirectToAction(nameof(Index));
+    }
+
+    public async Task<IActionResult> Details(
+        int id,
+        CancellationToken cancellationToken = default)
+    {
+        if (id <= 0)
+        {
+            TempData["ErrorMessage"] = "Geçersiz ödünç kaydı.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        var loan = await _loanApiService.GetByIdAsync(id, cancellationToken);
+
+        if (loan is null)
+        {
+            TempData["ErrorMessage"] = "Ödünç kaydı bulunamadı.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        var model = new LoanDetailViewModel
+        {
+            Loan = loan
+        };
+
+        return View(model);
     }
 
     private async Task<LoanCreateViewModel> CreateLoanCreateModelAsync(

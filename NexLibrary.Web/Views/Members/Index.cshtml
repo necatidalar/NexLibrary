@@ -72,18 +72,18 @@
         white-space: nowrap;
     }
 
-    .btn:hover {
-        background: #405c78;
-    }
+        .btn:hover {
+            background: #405c78;
+        }
 
     .btn-light {
         background: #e5e7eb;
         color: #111827;
     }
 
-    .btn-light:hover {
-        background: #d1d5db;
-    }
+        .btn-light:hover {
+            background: #d1d5db;
+        }
 
     .alert {
         background: #fff3cd;
@@ -127,7 +127,7 @@
     table {
         width: 100%;
         border-collapse: collapse;
-        min-width: 950px;
+        min-width: 1050px;
     }
 
     th {
@@ -249,12 +249,24 @@
            value="@Model.Search"
            placeholder="Üye adı, telefon, okul no veya dinamik alan ara..." />
 
-    <input type="hidden" name="pageSize" value="@Model.PageSize" />
+    <select class="search-input" style="max-width: 130px;" name="pageSize">
+        @foreach (var size in Model.PageSizeOptions)
+        {
+            if (Model.PageSize == size)
+            {
+                <option value="@size" selected>@size kayıt</option>
+            }
+            else
+            {
+                <option value="@size">@size kayıt</option>
+            }
+        }
+    </select>
 
     <button class="btn" type="submit">Ara</button>
 
     <a class="btn btn-light" asp-controller="Members" asp-action="Index">Temizle</a>
-</form>
+</form> 
 
 <div class="table-card">
     <div class="table-header">
@@ -318,9 +330,16 @@
                             <td>
                                 <div class="action-buttons">
                                     <a class="btn btn-light"
-                                       asp-controller="Members"
-                                       asp-action="Edit"
-                                       asp-route-id="@member.Id">
+                                           asp-controller="Members"
+                                           asp-action="Details"
+                                           asp-route-id="@member.Id">
+                                        Detay
+                                    </a>
+
+                                    <a class="btn btn-light"
+                                           asp-controller="Members"
+                                           asp-action="Edit"
+                                           asp-route-id="@member.Id">
                                         Düzenle
                                     </a>
                                 </div>
@@ -341,11 +360,20 @@
             @if (Model.Members.PageNumber > 1)
             {
                 <a class="btn btn-light"
-                   asp-controller="Members"
-                   asp-action="Index"
-                   asp-route-search="@Model.Search"
-                   asp-route-pageNumber="@(Model.Members.PageNumber - 1)"
-                   asp-route-pageSize="@Model.PageSize">
+                       asp-controller="Members"
+                       asp-action="Index"
+                       asp-route-search="@Model.Search"
+                       asp-route-pageNumber="1"
+                       asp-route-pageSize="@Model.PageSize">
+                    İlk
+                </a>
+
+                <a class="btn btn-light"
+                       asp-controller="Members"
+                       asp-action="Index"
+                       asp-route-search="@Model.Search"
+                       asp-route-pageNumber="@(Model.Members.PageNumber - 1)"
+                       asp-route-pageSize="@Model.PageSize">
                     Önceki
                 </a>
             }
@@ -353,12 +381,21 @@
             @if (Model.Members.PageNumber < totalPages)
             {
                 <a class="btn"
-                   asp-controller="Members"
-                   asp-action="Index"
-                   asp-route-search="@Model.Search"
-                   asp-route-pageNumber="@(Model.Members.PageNumber + 1)"
-                   asp-route-pageSize="@Model.PageSize">
+                       asp-controller="Members"
+                       asp-action="Index"
+                       asp-route-search="@Model.Search"
+                       asp-route-pageNumber="@(Model.Members.PageNumber + 1)"
+                       asp-route-pageSize="@Model.PageSize">
                     Sonraki
+                </a>
+
+                <a class="btn"
+                       asp-controller="Members"
+                       asp-action="Index"
+                       asp-route-search="@Model.Search"
+                       asp-route-pageNumber="@totalPages"
+                       asp-route-pageSize="@Model.PageSize">
+                    Son
                 </a>
             }
         </div>

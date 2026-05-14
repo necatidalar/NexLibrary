@@ -314,4 +314,45 @@ public sealed class BooksController : Controller
 
         return values;
     }
+
+    public async Task<IActionResult> Details(
+    int id,
+    CancellationToken cancellationToken = default)
+    {
+        if (id <= 0)
+        {
+            TempData["ErrorMessage"] = "Geçersiz kitap bilgisi.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        var book = await _bookApiService.GetByIdAsync(id, cancellationToken);
+
+        if (book is null)
+        {
+            TempData["ErrorMessage"] = "Kitap bulunamadı.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        var copies = new List<NexLibrary.Contracts.BookCopies.BookCopyListResponse>();
+
+        try
+        {
+            var bookCopyApiService = HttpContext.RequestServices
+                .GetRequiredService<BookCopyApiService>();
+
+            copies = await bookCopyApiService.GetByBookIdAsync(id, cancellationToken);
+        }
+        catch
+        {
+            copies = new List<NexLibrary.Contracts.BookCopies.BookCopyListResponse>();
+        }
+
+        var model = new BookDetailViewModel
+        {
+            Book = book,
+            Copies = copies
+        };
+
+        return View(model);
+    }
 }
