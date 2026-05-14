@@ -1,0 +1,577 @@
+﻿@model NexLibrary.Web.ViewModels.FormFields.FormFieldsIndexViewModel
+
+@{
+    ViewData["Title"] = "Form Alanları";
+}
+
+<style>
+    .page-header {
+        background: white;
+        border-radius: 12px;
+        padding: 18px 22px;
+        margin-bottom: 20px;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .page-title {
+        font-size: 24px;
+        font-weight: 700;
+    }
+
+    .page-subtitle {
+        color: #6b7280;
+        margin-top: 4px;
+        font-size: 14px;
+    }
+
+    .btn {
+        border: none;
+        background: #34495e;
+        color: white;
+        padding: 10px 15px;
+        border-radius: 8px;
+        font-weight: 700;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+        .btn:hover {
+            background: #405c78;
+        }
+
+    .btn-light {
+        background: #e5e7eb;
+        color: #111827;
+    }
+
+        .btn-light:hover {
+            background: #d1d5db;
+        }
+
+    .btn-danger {
+        background: #991b1b;
+    }
+
+        .btn-danger:hover {
+            background: #7f1d1d;
+        }
+
+    .alert-success {
+        background: #dcfce7;
+        color: #166534;
+        border: 1px solid #bbf7d0;
+        padding: 14px 16px;
+        border-radius: 10px;
+        margin-bottom: 18px;
+    }
+
+    .alert-error {
+        background: #fee2e2;
+        color: #991b1b;
+        border: 1px solid #fecaca;
+        padding: 14px 16px;
+        border-radius: 10px;
+        margin-bottom: 18px;
+    }
+
+    .filter-card,
+    .form-card,
+    .table-card {
+        background: white;
+        border-radius: 14px;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+        border: 1px solid #eef0f3;
+        margin-bottom: 20px;
+        overflow: hidden;
+    }
+
+    .card-header {
+        padding: 16px 18px;
+        border-bottom: 1px solid #eef0f3;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .card-title {
+        font-size: 18px;
+        font-weight: 700;
+    }
+
+    .card-count {
+        color: #6b7280;
+        font-size: 14px;
+    }
+
+    .card-body {
+        padding: 18px;
+    }
+
+    .module-form {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+
+    .input,
+    .select,
+    .textarea {
+        width: 100%;
+        padding: 10px 11px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        font-size: 14px;
+        box-sizing: border-box;
+    }
+
+    .textarea {
+        min-height: 80px;
+        resize: vertical;
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(160px, 1fr));
+        gap: 14px;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+        .form-group label {
+            font-size: 13px;
+            font-weight: 700;
+            color: #374151;
+        }
+
+    .check-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(160px, 1fr));
+        gap: 10px;
+        margin-top: 14px;
+    }
+
+    .check-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+    }
+
+    .form-actions {
+        margin-top: 16px;
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+    }
+
+    .table-wrapper {
+        overflow-x: auto;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 1300px;
+    }
+
+    th {
+        background: #f9fafb;
+        text-align: left;
+        padding: 12px;
+        font-size: 13px;
+        border-bottom: 1px solid #eef0f3;
+        white-space: nowrap;
+    }
+
+    td {
+        padding: 10px 12px;
+        border-bottom: 1px solid #eef0f3;
+        font-size: 13px;
+        white-space: nowrap;
+        vertical-align: middle;
+    }
+
+    .small-input {
+        width: 70px;
+        padding: 7px 8px;
+        border: 1px solid #d1d5db;
+        border-radius: 7px;
+    }
+
+    .badge {
+        display: inline-block;
+        padding: 5px 9px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .badge-system {
+        background: #dbeafe;
+        color: #1d4ed8;
+    }
+
+    .badge-user {
+        background: #f3f4f6;
+        color: #374151;
+    }
+
+    .badge-active {
+        background: #dcfce7;
+        color: #166534;
+    }
+
+    .badge-passive {
+        background: #e5e7eb;
+        color: #374151;
+    }
+
+    .row-passive {
+        background: #f3f4f6;
+        color: #6b7280;
+    }
+</style>
+
+<div class="page-header">
+    <div>
+        <div class="page-title">Form Alanları</div>
+        <div class="page-subtitle">Modüllere ait dinamik alanları ve görünürlük ayarlarını yönet</div>
+    </div>
+
+    <a class="btn" asp-controller="FormFields" asp-action="Index" asp-route-modulKodu="@Model.ModulKodu">Yenile</a>
+</div>
+
+@if (TempData["SuccessMessage"] is not null)
+{
+    <div class="alert-success">@TempData["SuccessMessage"]</div>
+}
+
+@if (TempData["ErrorMessage"] is not null)
+{
+    <div class="alert-error">@TempData["ErrorMessage"]</div>
+}
+
+<div class="filter-card">
+    <div class="card-header">
+        <div class="card-title">Modül Seçimi</div>
+        <div class="card-count">Aktif modül: @Model.ModulKodu</div>
+    </div>
+
+    <div class="card-body">
+        <form class="module-form" method="get" asp-controller="FormFields" asp-action="Index">
+            <select class="select" style="max-width: 260px;" name="modulKodu">
+                @foreach (var module in Model.Modules)
+                {
+                    if (module == Model.ModulKodu)
+                    {
+                        <option value="@module" selected>@module</option>
+                    }
+                    else
+                    {
+                        <option value="@module">@module</option>
+                    }
+                }
+            </select>
+
+            <button class="btn" type="submit">Modülü Göster</button>
+        </form>
+    </div>
+</div>
+
+<div class="form-card">
+    <div class="card-header">
+        <div class="card-title">Yeni Dinamik Alan Ekle</div>
+        <div class="card-count">Alan kodu benzersiz olmalıdır</div>
+    </div>
+
+    <div class="card-body">
+        <form method="post" asp-controller="FormFields" asp-action="Create">
+            @Html.AntiForgeryToken()
+
+            <input type="hidden" asp-for="ModulKodu" />
+            <input type="hidden" asp-for="NewField.ModulKodu" value="@Model.ModulKodu" />
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Alan Adı *</label>
+                    <input class="input" asp-for="NewField.AlanAdi" placeholder="Örn: Telefon" />
+                </div>
+
+                <div class="form-group">
+                    <label>Alan Kodu *</label>
+                    <input class="input" asp-for="NewField.AlanKodu" placeholder="Örn: TELEFON" />
+                </div>
+
+                <div class="form-group">
+                    <label>Alan Tipi</label>
+                    <select class="select" asp-for="NewField.AlanTipi">
+                        @foreach (var type in Model.FieldTypes)
+                        {
+                            <option value="@type">@type</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Sıra No</label>
+                    <input class="input" asp-for="NewField.SiraNo" type="number" min="1" />
+                </div>
+
+                <div class="form-group">
+                    <label>Minimum Karakter</label>
+                    <input class="input" asp-for="NewField.MinimumKarakter" type="number" min="0" />
+                </div>
+
+                <div class="form-group">
+                    <label>Maksimum Karakter</label>
+                    <input class="input" asp-for="NewField.MaksimumKarakter" type="number" min="0" />
+                </div>
+
+                <div class="form-group">
+                    <label>Varsayılan Değer</label>
+                    <input class="input" asp-for="NewField.VarsayilanDeger" />
+                </div>
+
+                <div class="form-group">
+                    <label>Placeholder</label>
+                    <input class="input" asp-for="NewField.Placeholder" placeholder="Örn: 05xx xxx xx xx" />
+                </div>
+            </div>
+
+            <div class="form-group" style="margin-top: 14px;">
+                <label>Açıklama</label>
+                <textarea class="textarea" asp-for="NewField.Aciklama"></textarea>
+            </div>
+
+            <div class="check-grid">
+                <label class="check-item">
+                    <input asp-for="NewField.ZorunluMu" type="checkbox" />
+                    Zorunlu
+                </label>
+
+                <label class="check-item">
+                    <input asp-for="NewField.BenzersizMi" type="checkbox" />
+                    Benzersiz
+                </label>
+
+                <label class="check-item">
+                    <input asp-for="NewField.FormdaGorunsunMu" type="checkbox" />
+                    Formda Görünsün
+                </label>
+
+                <label class="check-item">
+                    <input asp-for="NewField.ListedeGorunsunMu" type="checkbox" />
+                    Listede Görünsün
+                </label>
+
+                <label class="check-item">
+                    <input asp-for="NewField.AramadaGorunsunMu" type="checkbox" />
+                    Aramada Kullanılsın
+                </label>
+
+                <label class="check-item">
+                    <input asp-for="NewField.DetaydaGorunsunMu" type="checkbox" />
+                    Detayda Görünsün
+                </label>
+
+                <label class="check-item">
+                    <input asp-for="NewField.HizliKayittaGorunsunMu" type="checkbox" />
+                    Hızlı Kayıtta Görünsün
+                </label>
+            </div>
+
+            <div class="form-actions">
+                <button class="btn" type="submit">Yeni Alan Ekle</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="table-card">
+    <div class="card-header">
+        <div class="card-title">Alan Ayarları</div>
+        <div class="card-count">Toplam alan: @Model.Fields.Count</div>
+    </div>
+
+    <form method="post" asp-controller="FormFields" asp-action="SaveSettings">
+        @Html.AntiForgeryToken()
+
+        <input type="hidden" name="ModulKodu" value="@Model.ModulKodu" />
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Alan Kodu</th>
+                        <th>Alan Adı</th>
+                        <th>Tip</th>
+                        <th>Sıra</th>
+                        <th>Zorunlu</th>
+                        <th>Benzersiz</th>
+                        <th>Formda</th>
+                        <th>Listede</th>
+                        <th>Aramada</th>
+                        <th>Detayda</th>
+                        <th>Hızlı Kayıt</th>
+                        <th>Durum</th>
+                        <th>Kaynak</th>
+                        <th>Aktif/Pasif</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @if (Model.Fields.Count == 0)
+                    {
+                        <tr>
+                            <td colspan="15">Bu modül için form alanı bulunamadı.</td>
+                        </tr>
+                    }
+                    else
+                    {
+                        for (var i = 0; i < Model.Fields.Count; i++)
+                        {
+                            var field = Model.Fields[i];
+                            var rowClass = field.AktifMi ? "" : "row-passive";
+
+                            <tr class="@rowClass">
+                                <td>
+                                    @field.Id
+                                    <input type="hidden" name="Fields[@i].Id" value="@field.Id" />
+                                </td>
+
+                                <td>@field.AlanKodu</td>
+                                <td>@field.AlanAdi</td>
+                                <td>@field.AlanTipi</td>
+
+                                <td>
+                                    <input class="small-input"
+                                           type="number"
+                                           min="1"
+                                           name="Fields[@i].SiraNo"
+                                           value="@field.SiraNo" />
+                                </td>
+
+                                <td>
+                                    <input type="checkbox"
+                                           name="Fields[@i].ZorunluMu"
+                                           value="true"
+                                    @(field.ZorunluMu ? "checked" : "")
+                                    @(field.SistemAlaniMi ? "disabled" : "") />
+                                    <input type="hidden" name="Fields[@i].ZorunluMu" value="false" />
+                                </td>
+
+                                <td>
+                                    <input type="checkbox"
+                                           name="Fields[@i].BenzersizMi"
+                                           value="true"
+                                    @(field.BenzersizMi ? "checked" : "") />
+                                    <input type="hidden" name="Fields[@i].BenzersizMi" value="false" />
+                                </td>
+
+                                <td>
+                                    <input type="checkbox"
+                                           name="Fields[@i].FormdaGorunsunMu"
+                                           value="true"
+                                    @(field.FormdaGorunsunMu ? "checked" : "") />
+                                    <input type="hidden" name="Fields[@i].FormdaGorunsunMu" value="false" />
+                                </td>
+
+                                <td>
+                                    <input type="checkbox"
+                                           name="Fields[@i].ListedeGorunsunMu"
+                                           value="true"
+                                    @(field.ListedeGorunsunMu ? "checked" : "")
+                                    @(field.SistemAlaniMi ? "disabled" : "") />
+                                    <input type="hidden" name="Fields[@i].ListedeGorunsunMu" value="false" />
+                                </td>
+
+                                <td>
+                                    <input type="checkbox"
+                                           name="Fields[@i].AramadaGorunsunMu"
+                                           value="true"
+                                    @(field.AramadaGorunsunMu ? "checked" : "") />
+                                    <input type="hidden" name="Fields[@i].AramadaGorunsunMu" value="false" />
+                                </td>
+
+                                <td>
+                                    <input type="checkbox"
+                                           name="Fields[@i].DetaydaGorunsunMu"
+                                           value="true"
+                                    @(field.DetaydaGorunsunMu ? "checked" : "") />
+                                    <input type="hidden" name="Fields[@i].DetaydaGorunsunMu" value="false" />
+                                </td>
+
+                                <td>
+                                    <input type="checkbox"
+                                           name="Fields[@i].HizliKayittaGorunsunMu"
+                                           value="true"
+                                    @(field.HizliKayittaGorunsunMu ? "checked" : "") />
+                                    <input type="hidden" name="Fields[@i].HizliKayittaGorunsunMu" value="false" />
+                                </td>
+
+                                <td>
+                                    <input type="checkbox"
+                                           name="Fields[@i].AktifMi"
+                                           value="true"
+                                    @(field.AktifMi ? "checked" : "")
+                                    @(field.SistemAlaniMi ? "disabled" : "") />
+                                    <input type="hidden" name="Fields[@i].AktifMi" value="false" />
+
+                                    @if (field.AktifMi)
+                                    {
+                                        <span class="badge badge-active">Aktif</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge badge-passive">Pasif</span>
+                                    }
+                                </td>
+
+                                <td>
+                                    @if (field.SistemAlaniMi)
+                                    {
+                                        <span class="badge badge-system">Sistem</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge badge-user">Kullanıcı</span>
+                                    }
+                                </td>
+
+                                <td>
+                                    @if (!field.SistemAlaniMi)
+                                    {
+                                        <button class="btn btn-light"
+                                                type="submit"
+                                                formaction="@Url.Action("SetActive", "FormFields", new { id = field.Id, modulKodu = Model.ModulKodu, aktifMi = !field.AktifMi })">
+                                            @(field.AktifMi ? "Pasif Yap" : "Aktif Yap")
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <span>-</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <div class="card-body" style="display: flex; justify-content: flex-end;">
+            <button class="btn" type="submit">Ayarları Kaydet</button>
+        </div>
+    </form>
+</div>
