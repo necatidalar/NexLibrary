@@ -1,0 +1,376 @@
+﻿@model NexLibrary.Web.ViewModels.Loans.LoansIndexViewModel
+
+@{
+    ViewData["Title"] = "Ödünç İşlemleri";
+
+    var totalPages = Model.Loans.PageSize <= 0
+        ? 1
+        : (int)Math.Ceiling(Model.Loans.TotalCount / (double)Model.Loans.PageSize);
+
+    totalPages = totalPages <= 0 ? 1 : totalPages;
+}
+
+<style>
+    .page-header {
+        background: white;
+        border-radius: 12px;
+        padding: 18px 22px;
+        margin-bottom: 20px;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .page-title {
+        font-size: 24px;
+        font-weight: 700;
+    }
+
+    .page-subtitle {
+        color: #6b7280;
+        margin-top: 4px;
+        font-size: 14px;
+    }
+
+    .search-box {
+        background: white;
+        border-radius: 12px;
+        padding: 16px;
+        margin-bottom: 20px;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+
+    .search-input {
+        flex: 1;
+        padding: 11px 12px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        font-size: 14px;
+    }
+
+    .btn {
+        border: none;
+        background: #34495e;
+        color: white;
+        padding: 11px 16px;
+        border-radius: 8px;
+        font-weight: 700;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .btn:hover {
+        background: #405c78;
+    }
+
+    .btn-light {
+        background: #e5e7eb;
+        color: #111827;
+    }
+
+    .btn-light:hover {
+        background: #d1d5db;
+    }
+
+    .btn-danger {
+        background: #991b1b;
+    }
+
+    .btn-danger:hover {
+        background: #7f1d1d;
+    }
+
+    .alert {
+        background: #fff3cd;
+        color: #664d03;
+        border: 1px solid #ffecb5;
+        padding: 14px 16px;
+        border-radius: 10px;
+        margin-bottom: 18px;
+    }
+
+    .table-card {
+        background: white;
+        border-radius: 14px;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+        border: 1px solid #eef0f3;
+        overflow: hidden;
+    }
+
+    .table-header {
+        padding: 16px 18px;
+        border-bottom: 1px solid #eef0f3;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .table-title {
+        font-size: 18px;
+        font-weight: 700;
+    }
+
+    .table-count {
+        color: #6b7280;
+        font-size: 14px;
+    }
+
+    .table-wrapper {
+        overflow-x: auto;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 1100px;
+    }
+
+    th {
+        background: #f9fafb;
+        text-align: left;
+        padding: 12px;
+        font-size: 14px;
+        border-bottom: 1px solid #eef0f3;
+        white-space: nowrap;
+    }
+
+    td {
+        padding: 12px;
+        border-bottom: 1px solid #eef0f3;
+        font-size: 14px;
+        white-space: nowrap;
+    }
+
+    tr.row-overdue {
+        background: #fff1f2;
+    }
+
+    tr.row-returned {
+        background: #f0fdf4;
+    }
+
+    tr.row-cancelled {
+        background: #f3f4f6;
+        color: #6b7280;
+    }
+
+    .badge {
+        display: inline-block;
+        padding: 5px 9px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 700;
+        background: #edf2f7;
+        color: #374151;
+    }
+
+    .badge-loaned {
+        background: #dbeafe;
+        color: #1d4ed8;
+    }
+
+    .badge-returned {
+        background: #dcfce7;
+        color: #166534;
+    }
+
+    .badge-overdue {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    .badge-cancelled {
+        background: #e5e7eb;
+        color: #374151;
+    }
+
+    .pagination {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 14px 18px;
+        border-top: 1px solid #eef0f3;
+        gap: 12px;
+    }
+
+    .pagination-info {
+        color: #6b7280;
+        font-size: 14px;
+    }
+
+    .pagination-actions {
+        display: flex;
+        gap: 8px;
+    }
+</style>
+
+<div class="page-header">
+    <div>
+        <div class="page-title">Ödünç İşlemleri</div>
+        <div class="page-subtitle">Kitap, üye, barkod ve durum bilgileriyle ödünç kayıtları</div>
+    </div>
+
+    <a class="btn" asp-controller="Loans" asp-action="Index">Yenile</a>
+</div>
+
+@if (ViewBag.ErrorMessage is not null)
+{
+    <div class="alert">
+        @ViewBag.ErrorMessage
+    </div>
+}
+
+<form class="search-box" method="get" asp-controller="Loans" asp-action="Index">
+    <input class="search-input"
+           type="text"
+           name="search"
+           value="@Model.Search"
+           placeholder="Kitap adı, üye adı, barkod veya demirbaş no ara..." />
+
+    <input type="hidden" name="pageSize" value="@Model.PageSize" />
+    <input type="hidden" name="overdueOnly" value="false" />
+
+    <button class="btn" type="submit">Ara</button>
+
+    <a class="btn btn-light" asp-controller="Loans" asp-action="Index">Temizle</a>
+
+    @if (Model.OverdueOnly)
+    {
+        <a class="btn btn-light"
+               asp-controller="Loans"
+               asp-action="Index"
+               asp-route-pageSize="@Model.PageSize">
+            Tümünü Göster
+        </a>
+    }
+    else
+    {
+        <a class="btn btn-danger"
+               asp-controller="Loans"
+               asp-action="Index"
+               asp-route-overdueOnly="true"
+               asp-route-pageSize="@Model.PageSize">
+            Gecikenleri Göster
+        </a>
+    }
+</form>
+
+<div class="table-card">
+    <div class="table-header">
+        <div class="table-title">
+            @(Model.OverdueOnly ? "Geciken Ödünç Kayıtları" : "Ödünç Listesi")
+        </div>
+
+        <div class="table-count">Toplam kayıt: @Model.Loans.TotalCount</div>
+    </div>
+
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Kitap</th>
+                    <th>Barkod</th>
+                    <th>Üye</th>
+                    <th>Veriliş Tarihi</th>
+                    <th>Planlanan İade</th>
+                    <th>İade Tarihi</th>
+                    <th>Durum</th>
+                    <th>Aktif</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @if (Model.Loans.Items.Count == 0)
+                {
+                    <tr>
+                        <td colspan="9">Ödünç kaydı bulunamadı.</td>
+                    </tr>
+                }
+                else
+                {
+                    foreach (var loan in Model.Loans.Items)
+                    {
+                        var rowClass = loan.Durum switch
+                        {
+                            "Gecikti" => "row-overdue",
+                            "IadeEdildi" => "row-returned",
+                            "IptalEdildi" => "row-cancelled",
+                            _ => ""
+                        };
+
+                        var badgeClass = loan.Durum switch
+                        {
+                            "Oduncte" => "badge badge-loaned",
+                            "IadeEdildi" => "badge badge-returned",
+                            "Gecikti" => "badge badge-overdue",
+                            "IptalEdildi" => "badge badge-cancelled",
+                            _ => "badge"
+                        };
+
+                        var statusText = loan.Durum switch
+                        {
+                            "Oduncte" => "Ödünçte",
+                            "IadeEdildi" => "İade Edildi",
+                            "Gecikti" => "Gecikti",
+                            "IptalEdildi" => "İptal Edildi",
+                            _ => loan.Durum
+                        };
+
+                        <tr class="@rowClass">
+                            <td>@loan.Id</td>
+                            <td>@loan.KitapAdi</td>
+                            <td>@(loan.KitapKopyaBarkod ?? "-")</td>
+                            <td>@loan.UyeAdiSoyadi</td>
+                            <td>@loan.VerilisTarihi.ToString("dd.MM.yyyy")</td>
+                            <td>@loan.PlanlananIadeTarihi.ToString("dd.MM.yyyy")</td>
+                            <td>@(loan.IadeTarihi?.ToString("dd.MM.yyyy") ?? "-")</td>
+                            <td><span class="@badgeClass">@statusText</span></td>
+                            <td>@(loan.AktifMi ? "Evet" : "Hayır")</td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="pagination">
+        <div class="pagination-info">
+            Sayfa @Model.Loans.PageNumber / @totalPages
+        </div>
+
+        <div class="pagination-actions">
+            @if (Model.Loans.PageNumber > 1)
+            {
+                <a class="btn btn-light"
+                       asp-controller="Loans"
+                       asp-action="Index"
+                       asp-route-search="@Model.Search"
+                       asp-route-overdueOnly="@Model.OverdueOnly"
+                       asp-route-pageNumber="@(Model.Loans.PageNumber - 1)"
+                       asp-route-pageSize="@Model.PageSize">
+                    Önceki
+                </a>
+            }
+
+            @if (Model.Loans.PageNumber < totalPages)
+            {
+                <a class="btn"
+                       asp-controller="Loans"
+                       asp-action="Index"
+                       asp-route-search="@Model.Search"
+                       asp-route-overdueOnly="@Model.OverdueOnly"
+                       asp-route-pageNumber="@(Model.Loans.PageNumber + 1)"
+                       asp-route-pageSize="@Model.PageSize">
+                    Sonraki
+                </a>
+            }
+        </div>
+    </div>
+</div>
