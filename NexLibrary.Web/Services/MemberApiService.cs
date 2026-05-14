@@ -51,4 +51,33 @@ public sealed class MemberApiService
             return null;
         }
     }
+
+    public async Task<MemberDetailResponse?> CreateAsync(
+        MemberCreateRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var httpResponse = await _httpClient.PostAsJsonAsync(
+                "api/members",
+                request,
+                JsonOptions,
+                cancellationToken);
+
+            var response = await httpResponse.Content.ReadFromJsonAsync<ApiResponse<MemberDetailResponse>>(
+                JsonOptions,
+                cancellationToken);
+
+            if (response is null || !response.BasariliMi)
+            {
+                return null;
+            }
+
+            return response.Veri;
+        }
+        catch
+        {
+            return null;
+        }
+    }
 }

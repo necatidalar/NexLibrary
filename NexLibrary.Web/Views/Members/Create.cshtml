@@ -1,0 +1,321 @@
+﻿@model NexLibrary.Web.ViewModels.Members.MemberCreateViewModel
+
+@{
+    ViewData["Title"] = "Yeni Üye";
+
+    var dynamicFields = Model.Fields
+        .Where(x => !x.SistemAlaniMi && x.FormdaGorunsunMu && x.AktifMi)
+        .OrderBy(x => x.SiraNo)
+        .ThenBy(x => x.Id)
+        .ToList();
+}
+
+<style>
+    .page-header {
+        background: white;
+        border-radius: 12px;
+        padding: 18px 22px;
+        margin-bottom: 20px;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .page-title {
+        font-size: 24px;
+        font-weight: 700;
+    }
+
+    .page-subtitle {
+        color: #6b7280;
+        margin-top: 4px;
+        font-size: 14px;
+    }
+
+    .btn {
+        border: none;
+        background: #34495e;
+        color: white;
+        padding: 10px 15px;
+        border-radius: 8px;
+        font-weight: 700;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+        .btn:hover {
+            background: #405c78;
+        }
+
+    .btn-light {
+        background: #e5e7eb;
+        color: #111827;
+    }
+
+        .btn-light:hover {
+            background: #d1d5db;
+        }
+
+    .alert-error {
+        background: #fee2e2;
+        color: #991b1b;
+        border: 1px solid #fecaca;
+        padding: 14px 16px;
+        border-radius: 10px;
+        margin-bottom: 18px;
+    }
+
+    .form-card {
+        background: white;
+        border-radius: 14px;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+        border: 1px solid #eef0f3;
+        overflow: hidden;
+    }
+
+    .card-header {
+        padding: 16px 18px;
+        border-bottom: 1px solid #eef0f3;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .card-title {
+        font-size: 18px;
+        font-weight: 700;
+    }
+
+    .card-count {
+        color: #6b7280;
+        font-size: 14px;
+    }
+
+    .card-body {
+        padding: 18px;
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(240px, 1fr));
+        gap: 16px;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 7px;
+    }
+
+        .form-group.full {
+            grid-column: 1 / -1;
+        }
+
+        .form-group label {
+            font-size: 13px;
+            font-weight: 700;
+            color: #374151;
+        }
+
+    .input,
+    .select,
+    .textarea {
+        width: 100%;
+        padding: 11px 12px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        font-size: 14px;
+        box-sizing: border-box;
+    }
+
+    .textarea {
+        min-height: 95px;
+        resize: vertical;
+    }
+
+    .check-row {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        padding: 11px 12px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        background: #f9fafb;
+    }
+
+    .field-help {
+        font-size: 12px;
+        color: #6b7280;
+    }
+
+    .form-actions {
+        margin-top: 22px;
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+    }
+
+    @@media (max-width: 800px) {
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<div class="page-header">
+    <div>
+        <div class="page-title">Yeni Üye</div>
+        <div class="page-subtitle">Dinamik alanlara göre üye kaydı oluştur</div>
+    </div>
+
+    <a class="btn btn-light" asp-controller="Members" asp-action="Index">Listeye Dön</a>
+</div>
+
+@if (TempData["ErrorMessage"] is not null)
+{
+    <div class="alert-error">@TempData["ErrorMessage"]</div>
+}
+
+<div class="form-card">
+    <div class="card-header">
+        <div class="card-title">Üye Bilgileri</div>
+        <div class="card-count">Dinamik alan sayısı: @dynamicFields.Count</div>
+    </div>
+
+    <div class="card-body">
+        <form method="post" asp-controller="Members" asp-action="Create">
+            @Html.AntiForgeryToken()
+
+            <div class="form-grid">
+                <div class="form-group full">
+                    <label>Üye Adı Soyadı *</label>
+                    <input class="input"
+                           asp-for="UyeAdiSoyadi"
+                           maxlength="200"
+                           placeholder="Örn: Ahmet Yılmaz"
+                           required />
+                    <div class="field-help">Üyenin sistemde görünen ana ad soyad bilgisidir.</div>
+                </div>
+
+                @foreach (var field in dynamicFields)
+                {
+                    var inputName = $"DynamicFields[{field.AlanKodu}]";
+                    var requiredAttr = field.ZorunluMu ? "required" : null;
+                    var maxLength = field.MaksimumKarakter.HasValue && field.MaksimumKarakter.Value > 0
+                        ? field.MaksimumKarakter.Value.ToString()
+                        : null;
+
+                    var labelText = field.ZorunluMu
+                        ? $"{field.AlanAdi} *"
+                        : field.AlanAdi;
+
+                    var fullRow = field.AlanTipi == "UzunMetin" ? "full" : "";
+
+                    <div class="form-group @fullRow">
+                        <label>@labelText</label>
+
+                        @switch (field.AlanTipi)
+                        {
+                            case "UzunMetin":
+                                <textarea class="textarea"
+                                          name="@inputName"
+                                          maxlength="@maxLength"
+                                          placeholder="@field.Placeholder"
+                                          required="@requiredAttr">@field.VarsayilanDeger</textarea>
+                                break;
+
+                            case "Sayi":
+                                <input class="input"
+                                       type="number"
+                                       step="1"
+                                       name="@inputName"
+                                       value="@field.VarsayilanDeger"
+                                       placeholder="@field.Placeholder"
+                                       required="@requiredAttr" />
+                                break;
+
+                            case "OndalikliSayi":
+                            case "Para":
+                                <input class="input"
+                                       type="number"
+                                       step="0.01"
+                                       name="@inputName"
+                                       value="@field.VarsayilanDeger"
+                                       placeholder="@field.Placeholder"
+                                       required="@requiredAttr" />
+                                break;
+
+                            case "Tarih":
+                                <input class="input"
+                                       type="date"
+                                       name="@inputName"
+                                       value="@field.VarsayilanDeger"
+                                       required="@requiredAttr" />
+                                break;
+
+                            case "TarihSaat":
+                                <input class="input"
+                                       type="datetime-local"
+                                       name="@inputName"
+                                       value="@field.VarsayilanDeger"
+                                       required="@requiredAttr" />
+                                break;
+
+                            case "EvetHayir":
+                                <label class="check-row">
+                                    <input type="checkbox"
+                                           name="@inputName"
+                                           value="true" />
+                                    Evet
+                                </label>
+                                break;
+
+                            case "Eposta":
+                                <input class="input"
+                                       type="email"
+                                       name="@inputName"
+                                       value="@field.VarsayilanDeger"
+                                       maxlength="@maxLength"
+                                       placeholder="@field.Placeholder"
+                                       required="@requiredAttr" />
+                                break;
+
+                            case "Telefon":
+                                <input class="input"
+                                       type="tel"
+                                       name="@inputName"
+                                       value="@field.VarsayilanDeger"
+                                       maxlength="@maxLength"
+                                       placeholder="@field.Placeholder"
+                                       required="@requiredAttr" />
+                                break;
+
+                            default:
+                                <input class="input"
+                                       type="text"
+                                       name="@inputName"
+                                       value="@field.VarsayilanDeger"
+                                       maxlength="@maxLength"
+                                       placeholder="@field.Placeholder"
+                                       required="@requiredAttr" />
+                                break;
+                        }
+
+                        @if (!string.IsNullOrWhiteSpace(field.Aciklama))
+                        {
+                            <div class="field-help">@field.Aciklama</div>
+                        }
+                    </div>
+                }
+            </div>
+
+            <div class="form-actions">
+                <a class="btn btn-light" asp-controller="Members" asp-action="Index">İptal</a>
+                <button class="btn" type="submit">Kaydet</button>
+            </div>
+        </form>
+    </div>
+</div>

@@ -188,7 +188,10 @@
         <div class="page-subtitle">Dinamik alanlarla birlikte üye listesi</div>
     </div>
 
-    <a class="btn" asp-controller="Members" asp-action="Index">Yenile</a>
+    <div style="display: flex; gap: 10px;">
+        <a class="btn btn-light" asp-controller="Members" asp-action="Index">Yenile</a>
+        <a class="btn" asp-controller="Members" asp-action="Create">Yeni Üye</a>
+    </div>
 </div>
 
 @if (ViewBag.ErrorMessage is not null)
