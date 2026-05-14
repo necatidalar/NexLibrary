@@ -39,12 +39,30 @@ public sealed class MemberApiService
                 JsonOptions,
                 cancellationToken);
 
-            if (response is null || !response.BasariliMi)
-            {
-                return null;
-            }
+            return response is null || !response.BasariliMi
+                ? null
+                : response.Veri;
+        }
+        catch
+        {
+            return null;
+        }
+    }
 
-            return response.Veri;
+    public async Task<MemberDetailResponse?> GetByIdAsync(
+        int id,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var response = await _httpClient.GetFromJsonAsync<ApiResponse<MemberDetailResponse>>(
+                $"api/members/{id}",
+                JsonOptions,
+                cancellationToken);
+
+            return response is null || !response.BasariliMi
+                ? null
+                : response.Veri;
         }
         catch
         {
@@ -68,12 +86,36 @@ public sealed class MemberApiService
                 JsonOptions,
                 cancellationToken);
 
-            if (response is null || !response.BasariliMi)
-            {
-                return null;
-            }
+            return response is null || !response.BasariliMi
+                ? null
+                : response.Veri;
+        }
+        catch
+        {
+            return null;
+        }
+    }
 
-            return response.Veri;
+    public async Task<MemberDetailResponse?> UpdateAsync(
+        int id,
+        MemberUpdateRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var httpResponse = await _httpClient.PutAsJsonAsync(
+                $"api/members/{id}",
+                request,
+                JsonOptions,
+                cancellationToken);
+
+            var response = await httpResponse.Content.ReadFromJsonAsync<ApiResponse<MemberDetailResponse>>(
+                JsonOptions,
+                cancellationToken);
+
+            return response is null || !response.BasariliMi
+                ? null
+                : response.Veri;
         }
         catch
         {

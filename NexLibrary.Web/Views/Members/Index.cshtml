@@ -68,20 +68,22 @@
         cursor: pointer;
         text-decoration: none;
         display: inline-block;
+        font-size: 14px;
+        white-space: nowrap;
     }
 
-        .btn:hover {
-            background: #405c78;
-        }
+    .btn:hover {
+        background: #405c78;
+    }
 
     .btn-light {
         background: #e5e7eb;
         color: #111827;
     }
 
-        .btn-light:hover {
-            background: #d1d5db;
-        }
+    .btn-light:hover {
+        background: #d1d5db;
+    }
 
     .alert {
         background: #fff3cd;
@@ -125,7 +127,7 @@
     table {
         width: 100%;
         border-collapse: collapse;
-        min-width: 850px;
+        min-width: 950px;
     }
 
     th {
@@ -142,6 +144,7 @@
         border-bottom: 1px solid #eef0f3;
         font-size: 14px;
         white-space: nowrap;
+        vertical-align: middle;
     }
 
     .badge {
@@ -180,6 +183,30 @@
         display: flex;
         gap: 8px;
     }
+
+    .action-buttons {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+    }
+
+    @@media (max-width: 800px) {
+        .page-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .search-box {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .table-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 8px;
+        }
+    }
 </style>
 
 <div class="page-header">
@@ -198,6 +225,20 @@
 {
     <div class="alert">
         @ViewBag.ErrorMessage
+    </div>
+}
+
+@if (TempData["SuccessMessage"] is not null)
+{
+    <div class="alert" style="background:#dcfce7;color:#166534;border-color:#bbf7d0;">
+        @TempData["SuccessMessage"]
+    </div>
+}
+
+@if (TempData["ErrorMessage"] is not null)
+{
+    <div class="alert" style="background:#fee2e2;color:#991b1b;border-color:#fecaca;">
+        @TempData["ErrorMessage"]
     </div>
 }
 
@@ -235,6 +276,7 @@
 
                     <th>Durum</th>
                     <th>Oluşturma Tarihi</th>
+                    <th>İşlem</th>
                 </tr>
             </thead>
 
@@ -242,7 +284,7 @@
                 @if (Model.Members.Items.Count == 0)
                 {
                     <tr>
-                        <td colspan="@(dynamicColumns.Count + 4)">Üye kaydı bulunamadı.</td>
+                        <td colspan="@(dynamicColumns.Count + 5)">Üye kaydı bulunamadı.</td>
                     </tr>
                 }
                 else
@@ -272,6 +314,17 @@
                             </td>
 
                             <td>@member.OlusturmaTarihi.ToString("dd.MM.yyyy")</td>
+
+                            <td>
+                                <div class="action-buttons">
+                                    <a class="btn btn-light"
+                                       asp-controller="Members"
+                                       asp-action="Edit"
+                                       asp-route-id="@member.Id">
+                                        Düzenle
+                                    </a>
+                                </div>
+                            </td>
                         </tr>
                     }
                 }
@@ -288,11 +341,11 @@
             @if (Model.Members.PageNumber > 1)
             {
                 <a class="btn btn-light"
-                       asp-controller="Members"
-                       asp-action="Index"
-                       asp-route-search="@Model.Search"
-                       asp-route-pageNumber="@(Model.Members.PageNumber - 1)"
-                       asp-route-pageSize="@Model.PageSize">
+                   asp-controller="Members"
+                   asp-action="Index"
+                   asp-route-search="@Model.Search"
+                   asp-route-pageNumber="@(Model.Members.PageNumber - 1)"
+                   asp-route-pageSize="@Model.PageSize">
                     Önceki
                 </a>
             }
@@ -300,11 +353,11 @@
             @if (Model.Members.PageNumber < totalPages)
             {
                 <a class="btn"
-                       asp-controller="Members"
-                       asp-action="Index"
-                       asp-route-search="@Model.Search"
-                       asp-route-pageNumber="@(Model.Members.PageNumber + 1)"
-                       asp-route-pageSize="@Model.PageSize">
+                   asp-controller="Members"
+                   asp-action="Index"
+                   asp-route-search="@Model.Search"
+                   asp-route-pageNumber="@(Model.Members.PageNumber + 1)"
+                   asp-route-pageSize="@Model.PageSize">
                     Sonraki
                 </a>
             }
