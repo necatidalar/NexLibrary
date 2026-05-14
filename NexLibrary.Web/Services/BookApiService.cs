@@ -51,4 +51,33 @@ public sealed class BookApiService
             return null;
         }
     }
+
+    public async Task<BookDetailResponse?> CreateAsync(
+        BookCreateRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var httpResponse = await _httpClient.PostAsJsonAsync(
+                "api/books",
+                request,
+                JsonOptions,
+                cancellationToken);
+
+            var response = await httpResponse.Content.ReadFromJsonAsync<ApiResponse<BookDetailResponse>>(
+                JsonOptions,
+                cancellationToken);
+
+            if (response is null || !response.BasariliMi)
+            {
+                return null;
+            }
+
+            return response.Veri;
+        }
+        catch
+        {
+            return null;
+        }
+    }
 }
