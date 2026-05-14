@@ -39,12 +39,30 @@ public sealed class BookApiService
                 JsonOptions,
                 cancellationToken);
 
-            if (response is null || !response.BasariliMi)
-            {
-                return null;
-            }
+            return response is null || !response.BasariliMi
+                ? null
+                : response.Veri;
+        }
+        catch
+        {
+            return null;
+        }
+    }
 
-            return response.Veri;
+    public async Task<BookDetailResponse?> GetByIdAsync(
+        int id,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var response = await _httpClient.GetFromJsonAsync<ApiResponse<BookDetailResponse>>(
+                $"api/books/{id}",
+                JsonOptions,
+                cancellationToken);
+
+            return response is null || !response.BasariliMi
+                ? null
+                : response.Veri;
         }
         catch
         {
@@ -68,12 +86,36 @@ public sealed class BookApiService
                 JsonOptions,
                 cancellationToken);
 
-            if (response is null || !response.BasariliMi)
-            {
-                return null;
-            }
+            return response is null || !response.BasariliMi
+                ? null
+                : response.Veri;
+        }
+        catch
+        {
+            return null;
+        }
+    }
 
-            return response.Veri;
+    public async Task<BookDetailResponse?> UpdateAsync(
+        int id,
+        BookUpdateRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var httpResponse = await _httpClient.PutAsJsonAsync(
+                $"api/books/{id}",
+                request,
+                JsonOptions,
+                cancellationToken);
+
+            var response = await httpResponse.Content.ReadFromJsonAsync<ApiResponse<BookDetailResponse>>(
+                JsonOptions,
+                cancellationToken);
+
+            return response is null || !response.BasariliMi
+                ? null
+                : response.Veri;
         }
         catch
         {
