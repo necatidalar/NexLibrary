@@ -16,15 +16,21 @@
             .layout {
                 display: flex;
                 min-height: 100vh;
+                align-items: flex-start;
             }
 
             .sidebar {
                 width: 230px;
+                height: 100vh;
+                position: sticky;
+                top: 0;
                 background: #232d3c;
                 color: white;
                 padding: 20px 15px;
                 display: flex;
                 flex-direction: column;
+                box-sizing: border-box;
+                overflow-y: auto;
             }
 
             .brand {
@@ -53,7 +59,7 @@
                 }
 
             .user-box {
-                margin-top: 20px;
+                margin-top: auto;
                 padding-top: 15px;
                 border-top: 1px solid rgba(255,255,255,0.15);
             }
@@ -97,7 +103,10 @@
                 }
 
                 .sidebar {
-                    width: auto;
+                    width: 100%;
+                    height: auto;
+                    position: static;
+                    overflow-y: visible;
                 }
 
                 .content {

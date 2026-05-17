@@ -57,7 +57,6 @@ public sealed class AccountController : Controller
         {
             KullaniciAdi = model.KullaniciAdi.Trim(),
             Sifre = model.Sifre,
-            BeniHatirla = model.BeniHatirla
         };
 
         var loginResult = await _authApiService.LoginAsync(
@@ -95,10 +94,8 @@ public sealed class AccountController : Controller
 
         var authProperties = new AuthenticationProperties
         {
-            IsPersistent = model.BeniHatirla,
-            ExpiresUtc = model.BeniHatirla
-                ? DateTimeOffset.UtcNow.AddDays(14)
-                : DateTimeOffset.UtcNow.AddHours(8)
+            IsPersistent = false,
+            ExpiresUtc = DateTimeOffset.UtcNow.AddHours(8)
         };
 
         await HttpContext.SignInAsync(

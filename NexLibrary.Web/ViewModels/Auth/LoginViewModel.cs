@@ -6,7 +6,5 @@ public sealed class LoginViewModel
 
     public string Sifre { get; set; } = string.Empty;
 
-    public bool BeniHatirla { get; set; }
-
     public string? ReturnUrl { get; set; }
 }
