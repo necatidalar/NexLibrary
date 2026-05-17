@@ -3,8 +3,12 @@
 @{
     ViewData["Title"] = "Raporlar";
 
+    var dateFromValue = Model.DateFrom?.ToString("yyyy-MM-dd");
+    var dateToValue = Model.DateTo?.ToString("yyyy-MM-dd");
+
     var totalBooks = Model.Books.Count;
     var activeBooks = Model.Books.Count(x => x.AktifMi);
+
     var totalMembers = Model.Members.Count;
     var activeMembers = Model.Members.Count(x => x.AktifMi);
 
@@ -71,21 +75,56 @@
             background: #d1d5db;
         }
 
-    .filter-card {
+    .btn-green {
+        background: #166534;
+    }
+
+        .btn-green:hover {
+            background: #14532d;
+        }
+
+    .btn-orange {
+        background: #c2410c;
+    }
+
+        .btn-orange:hover {
+            background: #9a3412;
+        }
+
+    .filter-card,
+    .print-card,
+    .summary-card,
+    .report-section {
         background: white;
         border-radius: 14px;
         box-shadow: 0 1px 4px rgba(0,0,0,0.06);
         border: 1px solid #eef0f3;
-        padding: 16px;
         margin-bottom: 20px;
     }
 
-    .filter-form {
-        display: flex;
-        gap: 10px;
-        align-items: center;
-        flex-wrap: wrap;
+    .filter-card,
+    .print-card {
+        padding: 16px;
     }
+
+    .filter-form {
+        display: grid;
+        grid-template-columns: 1.4fr 1fr 1fr 1fr 1fr 1fr;
+        gap: 10px;
+        align-items: end;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+        .form-group label {
+            font-size: 13px;
+            font-weight: 700;
+            color: #374151;
+        }
 
     .input,
     .select {
@@ -93,12 +132,26 @@
         border: 1px solid #d1d5db;
         border-radius: 8px;
         font-size: 14px;
-        min-width: 180px;
+        width: 100%;
+        box-sizing: border-box;
     }
 
-    .input {
-        flex: 1;
-        min-width: 260px;
+    .check-row {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        font-size: 14px;
+        font-weight: 700;
+        color: #374151;
+        padding-top: 24px;
+    }
+
+    .filter-actions,
+    .print-actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 14px;
     }
 
     .summary-cards {
@@ -109,11 +162,7 @@
     }
 
     .summary-card {
-        background: white;
-        border-radius: 14px;
         padding: 16px;
-        box-shadow: 0 1px 4px rgba(0,0,0,0.06);
-        border: 1px solid #eef0f3;
     }
 
     .summary-value {
@@ -133,15 +182,6 @@
         font-size: 13px;
     }
 
-    .report-section {
-        background: white;
-        border-radius: 14px;
-        box-shadow: 0 1px 4px rgba(0,0,0,0.06);
-        border: 1px solid #eef0f3;
-        overflow: hidden;
-        margin-bottom: 22px;
-    }
-
     .section-header {
         padding: 16px 18px;
         border-bottom: 1px solid #eef0f3;
@@ -159,6 +199,33 @@
     .section-count {
         color: #6b7280;
         font-size: 14px;
+    }
+
+    .mini-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 12px;
+        padding: 16px 18px;
+        border-bottom: 1px solid #eef0f3;
+        background: #f9fafb;
+    }
+
+    .mini-box {
+        background: white;
+        border: 1px solid #eef0f3;
+        border-radius: 12px;
+        padding: 12px;
+    }
+
+    .mini-value {
+        font-size: 22px;
+        font-weight: 800;
+    }
+
+    .mini-label {
+        font-size: 13px;
+        color: #6b7280;
+        font-weight: 700;
     }
 
     .table-wrapper {
@@ -223,31 +290,14 @@
         color: #374151;
     }
 
-    .mini-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-        gap: 12px;
-        padding: 16px 18px;
-        border-bottom: 1px solid #eef0f3;
-        background: #f9fafb;
+    .print-title {
+        display: none;
     }
 
-    .mini-box {
-        background: white;
-        border: 1px solid #eef0f3;
-        border-radius: 12px;
-        padding: 12px;
-    }
-
-    .mini-value {
-        font-size: 22px;
-        font-weight: 800;
-    }
-
-    .mini-label {
-        font-size: 13px;
-        color: #6b7280;
-        font-weight: 700;
+    @@media (max-width: 1200px) {
+        .filter-form {
+            grid-template-columns: repeat(2, 1fr);
+        }
     }
 
     @@media (max-width: 800px) {
@@ -257,13 +307,7 @@
         }
 
         .filter-form {
-            flex-direction: column;
-            align-items: stretch;
-        }
-
-        .input,
-        .select {
-            width: 100%;
+            grid-template-columns: 1fr;
         }
 
         .section-header {
@@ -271,83 +315,250 @@
             align-items: flex-start;
         }
     }
+
+    @@media print {
+        body {
+            background: white !important;
+        }
+
+        .sidebar,
+        .page-header,
+        .filter-card,
+        .print-card,
+        .no-print {
+            display: none !important;
+        }
+
+        .content {
+            padding: 0 !important;
+        }
+
+        .print-title {
+            display: block;
+            margin-bottom: 16px;
+        }
+
+        .report-section,
+        .summary-card {
+            box-shadow: none !important;
+            border: 1px solid #ddd !important;
+        }
+
+        .btn {
+            display: none !important;
+        }
+
+        body.print-table-only .summary-cards,
+        body.print-table-only .mini-grid,
+        body.print-table-only .summary-card {
+            display: none !important;
+        }
+    }
 </style>
 
 <div class="page-header">
     <div>
         <div class="page-title">Raporlar</div>
-        <div class="page-subtitle">Kitap, üye, ödünç ve stok raporlarını tek ekrandan görüntüle</div>
+        <div class="page-subtitle">
+            Varsayılan rapor: Ödünç Raporu. İstersen rapor türünü seçip sadece istediğin veriyi listeleyebilirsin.
+        </div>
     </div>
 
     <a class="btn btn-light" asp-controller="Reports" asp-action="Index">Yenile</a>
 </div>
 
-<div class="filter-card">
-    <form class="filter-form" method="get" asp-controller="Reports" asp-action="Index">
-        <input class="input"
-               type="text"
-               name="search"
-               value="@Model.Search"
-               placeholder="Kitap, üye, barkod veya dinamik alan ara..." />
+<div class="filter-card no-print">
+    <form id="reportFilterForm" method="get" asp-controller="Reports" asp-action="Index">
+        <div class="filter-form">
+            <div class="form-group">
+                <label>Rapor Türü</label>
+                <select class="select" name="reportType" id="reportType">
+                    @foreach (var item in Model.ReportTypes)
+                    {
+                        if (Model.ReportType == item.Value)
+                        {
+                            <option value="@item.Value" selected>@item.Text</option>
+                        }
+                        else
+                        {
+                            <option value="@item.Value">@item.Text</option>
+                        }
+                    }
+                </select>
+            </div>
 
-        <select class="select" name="loanStatus">
-            @foreach (var status in Model.LoanStatuses)
-            {
-                var text = status switch
-                {
-                    "Tumu" => "Tüm Ödünç Durumları",
-                    "Oduncte" => "Ödünçte",
-                    "Gecikti" => "Gecikti",
-                    "IadeEdildi" => "İade Edildi",
-                    "IptalEdildi" => "İptal Edildi",
-                    _ => status
-                };
+            <div class="form-group">
+                <label>Arama</label>
+                <input class="input"
+                       type="text"
+                       name="search"
+                       value="@Model.Search"
+                       placeholder="Kitap, üye, barkod ara..." />
+            </div>
 
-                if (Model.LoanStatus == status)
-                {
-                    <option value="@status" selected>@text</option>
-                }
-                else
-                {
-                    <option value="@status">@text</option>
-                }
-            }
-        </select>
+            <div class="form-group">
+                <label>Ödünç Durumu</label>
+                <select class="select" name="loanStatus">
+                    @foreach (var status in Model.LoanStatuses)
+                    {
+                        if (Model.LoanStatus == status.Value)
+                        {
+                            <option value="@status.Value" selected>@status.Text</option>
+                        }
+                        else
+                        {
+                            <option value="@status.Value">@status.Text</option>
+                        }
+                    }
+                </select>
+            </div>
 
-        <button class="btn" type="submit">Raporu Filtrele</button>
+            <div class="form-group">
+                <label>Aktiflik</label>
+                <select class="select" name="activeStatus">
+                    @foreach (var item in Model.ActiveStatuses)
+                    {
+                        if (Model.ActiveStatus == item.Value)
+                        {
+                            <option value="@item.Value" selected>@item.Text</option>
+                        }
+                        else
+                        {
+                            <option value="@item.Value">@item.Text</option>
+                        }
+                    }
+                </select>
+            </div>
 
-        <a class="btn btn-light" asp-controller="Reports" asp-action="Index">Temizle</a>
+            <div class="form-group">
+                <label>Stok Durumu</label>
+                <select class="select" name="stockStatus">
+                    @foreach (var item in Model.StockStatuses)
+                    {
+                        if (Model.StockStatus == item.Value)
+                        {
+                            <option value="@item.Value" selected>@item.Text</option>
+                        }
+                        else
+                        {
+                            <option value="@item.Value">@item.Text</option>
+                        }
+                    }
+                </select>
+            </div>
+
+            <label class="check-row">
+                <input type="checkbox"
+                       name="detailed"
+                       value="true"
+                @(Model.Detailed ? "checked" : "") />
+                Detaylı görünüm
+            </label>
+
+            <div class="form-group">
+                <label>Başlangıç Tarihi</label>
+                <input class="input"
+                       type="date"
+                       name="dateFrom"
+                       value="@dateFromValue" />
+            </div>
+
+            <div class="form-group">
+                <label>Bitiş Tarihi</label>
+                <input class="input"
+                       type="date"
+                       name="dateTo"
+                       value="@dateToValue" />
+            </div>
+        </div>
+
+        <div class="filter-actions">
+            <button class="btn" type="submit">Raporu Göster</button>
+
+            <a class="btn btn-light" asp-controller="Reports" asp-action="Index">
+                Varsayılana Dön
+            </a>
+
+            <button class="btn btn-light" type="button" onclick="saveFavoriteReport()">
+                Favori Yap
+            </button>
+
+            <button class="btn btn-light" type="button" onclick="openFavoriteReport()">
+                Favoriyi Aç
+            </button>
+
+            <button class="btn btn-light" type="button" onclick="openLastReport()">
+                Son Kullanılanı Aç
+            </button>
+        </div>
     </form>
+</div>
+
+<div class="print-card no-print">
+    <div style="font-weight:700;margin-bottom:8px;">Yazdırma ve dışa aktarma seçenekleri</div>
+
+    <div class="print-actions">
+        <button class="btn" type="button" onclick="printDetailed()">
+            Detaylı Yazdır
+        </button>
+
+        <button class="btn btn-orange" type="button" onclick="printTableOnly()">
+            Sadece Tablo Yazdır
+        </button>
+
+        <button class="btn btn-green" type="button" onclick="printPdf()">
+            PDF Olarak Kaydet
+        </button>
+
+        <a class="btn btn-light"
+               asp-controller="Reports"
+               asp-action="ExportExcel"
+               asp-route-reportType="@Model.ReportType"
+               asp-route-search="@Model.Search"
+               asp-route-loanStatus="@Model.LoanStatus"
+               asp-route-activeStatus="@Model.ActiveStatus"
+               asp-route-stockStatus="@Model.StockStatus"
+               asp-route-dateFrom="@dateFromValue"
+               asp-route-dateTo="@dateToValue"
+               asp-route-detailed="@Model.Detailed">
+            Excel Uyumlu CSV İndir
+        </a>
+    </div>
+</div>
+
+<div class="print-title">
+    <h2>@Model.ReportTitle</h2>
+    <div>Oluşturma Tarihi: @DateTime.Now.ToString("dd.MM.yyyy HH:mm")</div>
 </div>
 
 <div class="summary-cards">
     <div class="summary-card">
         <div class="summary-value">@totalBooks</div>
-        <div class="summary-title">Kitap Raporu</div>
+        <div class="summary-title">Kitap</div>
         <div class="summary-desc">Aktif kitap: @activeBooks</div>
     </div>
 
     <div class="summary-card">
         <div class="summary-value">@totalMembers</div>
-        <div class="summary-title">Üye Raporu</div>
+        <div class="summary-title">Üye</div>
         <div class="summary-desc">Aktif üye: @activeMembers</div>
     </div>
 
     <div class="summary-card">
         <div class="summary-value">@totalLoans</div>
-        <div class="summary-title">Ödünç Raporu</div>
+        <div class="summary-title">Ödünç</div>
         <div class="summary-desc">Ödünçte: @loanedCount / Geciken: @overdueCount</div>
     </div>
 
     <div class="summary-card">
         <div class="summary-value">@totalCopies</div>
-        <div class="summary-title">Stok Raporu</div>
+        <div class="summary-title">Stok</div>
         <div class="summary-desc">Müsait: @availableCopies / Ödünçte: @loanedCopies</div>
     </div>
 
     <div class="summary-card">
         <div class="summary-value">@returnedCount</div>
-        <div class="summary-title">İade Raporu</div>
+        <div class="summary-title">İade</div>
         <div class="summary-desc">Filtreye göre iade edilmiş kayıt</div>
     </div>
 
@@ -358,300 +569,436 @@
     </div>
 </div>
 
-<div class="report-section">
-    <div class="section-header">
-        <div class="section-title">Kitap Raporu</div>
-        <div class="section-count">@Model.Books.Count kayıt</div>
-    </div>
-
-    <div class="table-wrapper">
-        <table>
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Kitap Adı</th>
-                    <th>Durum</th>
-                    <th>Oluşturma Tarihi</th>
-                    <th>Detay</th>
-                </tr>
-            </thead>
-
-            <tbody>
-                @if (Model.Books.Count == 0)
-                {
-                    <tr>
-                        <td colspan="5">Kitap raporu için kayıt bulunamadı.</td>
-                    </tr>
-                }
-                else
-                {
-                    foreach (var book in Model.Books)
-                    {
-                        <tr>
-                            <td>@book.Id</td>
-                            <td>@book.KitapAdi</td>
-                            <td>
-                                @if (book.AktifMi)
-                                {
-                                    <span class="badge badge-ok">Aktif</span>
-                                }
-                                else
-                                {
-                                    <span class="badge badge-muted">Pasif</span>
-                                }
-                            </td>
-                            <td>@book.OlusturmaTarihi.ToString("dd.MM.yyyy")</td>
-                            <td>
-                                <a class="btn btn-light"
-                                       asp-controller="Books"
-                                       asp-action="Details"
-                                       asp-route-id="@book.Id">
-                                    Detay
-                                </a>
-                            </td>
-                        </tr>
-                    }
-                }
-            </tbody>
-        </table>
-    </div>
-</div>
-
-<div class="report-section">
-    <div class="section-header">
-        <div class="section-title">Üye Raporu</div>
-        <div class="section-count">@Model.Members.Count kayıt</div>
-    </div>
-
-    <div class="table-wrapper">
-        <table>
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Üye Adı Soyadı</th>
-                    <th>Durum</th>
-                    <th>Oluşturma Tarihi</th>
-                    <th>Detay</th>
-                </tr>
-            </thead>
-
-            <tbody>
-                @if (Model.Members.Count == 0)
-                {
-                    <tr>
-                        <td colspan="5">Üye raporu için kayıt bulunamadı.</td>
-                    </tr>
-                }
-                else
-                {
-                    foreach (var member in Model.Members)
-                    {
-                        <tr>
-                            <td>@member.Id</td>
-                            <td>@member.UyeAdiSoyadi</td>
-                            <td>
-                                @if (member.AktifMi)
-                                {
-                                    <span class="badge badge-ok">Aktif</span>
-                                }
-                                else
-                                {
-                                    <span class="badge badge-muted">Pasif</span>
-                                }
-                            </td>
-                            <td>@member.OlusturmaTarihi.ToString("dd.MM.yyyy")</td>
-                            <td>
-                                <a class="btn btn-light"
-                                       asp-controller="Members"
-                                       asp-action="Details"
-                                       asp-route-id="@member.Id">
-                                    Detay
-                                </a>
-                            </td>
-                        </tr>
-                    }
-                }
-            </tbody>
-        </table>
-    </div>
-</div>
-
-<div class="report-section">
-    <div class="section-header">
-        <div class="section-title">Ödünç ve Geciken Kitaplar Raporu</div>
-        <div class="section-count">@Model.Loans.Count kayıt</div>
-    </div>
-
-    <div class="mini-grid">
-        <div class="mini-box">
-            <div class="mini-value">@loanedCount</div>
-            <div class="mini-label">Ödünçte</div>
+@if (Model.ReportType == "Summary")
+{
+    <div class="report-section">
+        <div class="section-header">
+            <div class="section-title">Özet Rapor</div>
+            <div class="section-count">Genel görünüm</div>
         </div>
 
-        <div class="mini-box">
-            <div class="mini-value">@overdueCount</div>
-            <div class="mini-label">Geciken</div>
-        </div>
+        <div class="mini-grid">
+            <div class="mini-box">
+                <div class="mini-value">@totalBooks</div>
+                <div class="mini-label">Kitap</div>
+            </div>
 
-        <div class="mini-box">
-            <div class="mini-value">@returnedCount</div>
-            <div class="mini-label">İade Edildi</div>
+            <div class="mini-box">
+                <div class="mini-value">@totalMembers</div>
+                <div class="mini-label">Üye</div>
+            </div>
+
+            <div class="mini-box">
+                <div class="mini-value">@totalLoans</div>
+                <div class="mini-label">Ödünç</div>
+            </div>
+
+            <div class="mini-box">
+                <div class="mini-value">@totalCopies</div>
+                <div class="mini-label">Toplam Kopya</div>
+            </div>
         </div>
     </div>
+}
 
-    <div class="table-wrapper">
-        <table>
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Kitap</th>
-                    <th>Barkod</th>
-                    <th>Üye</th>
-                    <th>Veriliş</th>
-                    <th>Planlanan İade</th>
-                    <th>İade</th>
-                    <th>Durum</th>
-                    <th>Detay</th>
-                </tr>
-            </thead>
+@if (Model.ReportType == "Books")
+{
+    <div class="report-section">
+        <div class="section-header">
+            <div class="section-title">Kitap Raporu</div>
+            <div class="section-count">@Model.Books.Count kayıt</div>
+        </div>
 
-            <tbody>
-                @if (Model.Loans.Count == 0)
-                {
+        <div class="table-wrapper">
+            <table>
+                <thead>
                     <tr>
-                        <td colspan="9">Ödünç raporu için kayıt bulunamadı.</td>
-                    </tr>
-                }
-                else
-                {
-                    foreach (var loan in Model.Loans)
-                    {
-                        var badgeClass = loan.Durum switch
+                        <th>ID</th>
+                        <th>Kitap Adı</th>
+                        <th>Durum</th>
+                        <th>Oluşturma Tarihi</th>
+                        @if (Model.Detailed)
                         {
-                            "Oduncte" => "badge badge-info",
-                            "Gecikti" => "badge badge-danger",
-                            "IadeEdildi" => "badge badge-ok",
-                            "IptalEdildi" => "badge badge-muted",
-                            _ => "badge"
-                        };
-
-                        var statusText = loan.Durum switch
-                        {
-                            "Oduncte" => "Ödünçte",
-                            "Gecikti" => "Gecikti",
-                            "IadeEdildi" => "İade Edildi",
-                            "IptalEdildi" => "İptal Edildi",
-                            _ => loan.Durum
-                        };
-
-                        <tr>
-                            <td>@loan.Id</td>
-                            <td>@loan.KitapAdi</td>
-                            <td>@(loan.KitapKopyaBarkod ?? "-")</td>
-                            <td>@loan.UyeAdiSoyadi</td>
-                            <td>@loan.VerilisTarihi.ToString("dd.MM.yyyy")</td>
-                            <td>@loan.PlanlananIadeTarihi.ToString("dd.MM.yyyy")</td>
-                            <td>@(loan.IadeTarihi?.ToString("dd.MM.yyyy") ?? "-")</td>
-                            <td><span class="@badgeClass">@statusText</span></td>
-                            <td>
-                                <a class="btn btn-light"
-                                       asp-controller="Loans"
-                                       asp-action="Details"
-                                       asp-route-id="@loan.Id">
-                                    Detay
-                                </a>
-                            </td>
-                        </tr>
-                    }
-                }
-            </tbody>
-        </table>
-    </div>
-</div>
-
-<div class="report-section">
-    <div class="section-header">
-        <div class="section-title">Kitap Stok Raporu</div>
-        <div class="section-count">@Model.StockSummary.Count kitap</div>
-    </div>
-
-    <div class="mini-grid">
-        <div class="mini-box">
-            <div class="mini-value">@totalCopies</div>
-            <div class="mini-label">Toplam Kopya</div>
-        </div>
-
-        <div class="mini-box">
-            <div class="mini-value">@availableCopies</div>
-            <div class="mini-label">Müsait</div>
-        </div>
-
-        <div class="mini-box">
-            <div class="mini-value">@loanedCopies</div>
-            <div class="mini-label">Ödünçte</div>
-        </div>
-
-        <div class="mini-box">
-            <div class="mini-value">@lostCopies</div>
-            <div class="mini-label">Kayıp</div>
-        </div>
-
-        <div class="mini-box">
-            <div class="mini-value">@damagedCopies</div>
-            <div class="mini-label">Hasarlı</div>
-        </div>
-    </div>
-
-    <div class="table-wrapper">
-        <table>
-            <thead>
-                <tr>
-                    <th>Kitap ID</th>
-                    <th>Kitap Adı</th>
-                    <th>Toplam</th>
-                    <th>Müsait</th>
-                    <th>Ödünçte</th>
-                    <th>Gecikti</th>
-                    <th>Kayıp</th>
-                    <th>Hasarlı</th>
-                    <th>Pasif</th>
-                    <th>Detay</th>
-                </tr>
-            </thead>
-
-            <tbody>
-                @if (Model.StockSummary.Count == 0)
-                {
-                    <tr>
-                        <td colspan="10">Stok raporu için kayıt bulunamadı.</td>
+                            <th>Dinamik Alan Sayısı</th>
+                        }
+                        <th class="no-print">Detay</th>
                     </tr>
-                }
-                else
-                {
-                    foreach (var item in Model.StockSummary)
+                </thead>
+
+                <tbody>
+                    @if (Model.Books.Count == 0)
                     {
                         <tr>
-                            <td>@item.KitapId</td>
-                            <td>@item.KitapAdi</td>
-                            <td>@item.ToplamKopya</td>
-                            <td><span class="badge badge-ok">@item.Musait</span></td>
-                            <td><span class="badge badge-info">@item.Oduncte</span></td>
-                            <td><span class="badge badge-danger">@item.Gecikti</span></td>
-                            <td><span class="badge badge-warning">@item.Kayip</span></td>
-                            <td><span class="badge badge-warning">@item.Hasarli</span></td>
-                            <td><span class="badge badge-muted">@item.Pasif</span></td>
-                            <td>
-                                <a class="btn btn-light"
-                                       asp-controller="BookCopies"
-                                       asp-action="Index"
-                                       asp-route-kitapId="@item.KitapId">
-                                    Kopyalar
-                                </a>
-                            </td>
+                            <td colspan="@(Model.Detailed ? 6 : 5)">Kitap raporu için kayıt bulunamadı.</td>
                         </tr>
                     }
-                }
-            </tbody>
-        </table>
+                    else
+                    {
+                        foreach (var book in Model.Books)
+                        {
+                            <tr>
+                                <td>@book.Id</td>
+                                <td>@book.KitapAdi</td>
+                                <td>
+                                    @if (book.AktifMi)
+                                    {
+                                        <span class="badge badge-ok">Aktif</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge badge-muted">Pasif</span>
+                                    }
+                                </td>
+                                <td>@book.OlusturmaTarihi.ToString("dd.MM.yyyy")</td>
+                                @if (Model.Detailed)
+                                {
+                                    <td>@book.DinamikAlanlar.Count</td>
+                                }
+                                <td class="no-print">
+                                    <a class="btn btn-light"
+                                           asp-controller="Books"
+                                           asp-action="Details"
+                                           asp-route-id="@book.Id">
+                                        Detay
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
     </div>
-</div>
+}
+
+@if (Model.ReportType == "Members")
+{
+    <div class="report-section">
+        <div class="section-header">
+            <div class="section-title">Üye Raporu</div>
+            <div class="section-count">@Model.Members.Count kayıt</div>
+        </div>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Üye Adı Soyadı</th>
+                        <th>Durum</th>
+                        <th>Oluşturma Tarihi</th>
+                        @if (Model.Detailed)
+                        {
+                            <th>Dinamik Alan Sayısı</th>
+                        }
+                        <th class="no-print">Detay</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @if (Model.Members.Count == 0)
+                    {
+                        <tr>
+                            <td colspan="@(Model.Detailed ? 6 : 5)">Üye raporu için kayıt bulunamadı.</td>
+                        </tr>
+                    }
+                    else
+                    {
+                        foreach (var member in Model.Members)
+                        {
+                            <tr>
+                                <td>@member.Id</td>
+                                <td>@member.UyeAdiSoyadi</td>
+                                <td>
+                                    @if (member.AktifMi)
+                                    {
+                                        <span class="badge badge-ok">Aktif</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge badge-muted">Pasif</span>
+                                    }
+                                </td>
+                                <td>@member.OlusturmaTarihi.ToString("dd.MM.yyyy")</td>
+                                @if (Model.Detailed)
+                                {
+                                    <td>@member.DinamikAlanlar.Count</td>
+                                }
+                                <td class="no-print">
+                                    <a class="btn btn-light"
+                                           asp-controller="Members"
+                                           asp-action="Details"
+                                           asp-route-id="@member.Id">
+                                        Detay
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+
+@if (Model.ReportType == "Loans" || Model.ReportType == "Overdue")
+{
+    <div class="report-section">
+        <div class="section-header">
+            <div class="section-title">@Model.ReportTitle</div>
+            <div class="section-count">@Model.Loans.Count kayıt</div>
+        </div>
+
+        <div class="mini-grid">
+            <div class="mini-box">
+                <div class="mini-value">@loanedCount</div>
+                <div class="mini-label">Ödünçte</div>
+            </div>
+
+            <div class="mini-box">
+                <div class="mini-value">@overdueCount</div>
+                <div class="mini-label">Geciken</div>
+            </div>
+
+            <div class="mini-box">
+                <div class="mini-value">@returnedCount</div>
+                <div class="mini-label">İade Edildi</div>
+            </div>
+        </div>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Kitap</th>
+                        <th>Barkod</th>
+                        <th>Üye</th>
+                        <th>Veriliş</th>
+                        <th>Planlanan İade</th>
+                        <th>İade</th>
+                        <th>Durum</th>
+                        @if (Model.Detailed)
+                        {
+                            <th>Aktif</th>
+                        }
+                        <th class="no-print">Detay</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @if (Model.Loans.Count == 0)
+                    {
+                        <tr>
+                            <td colspan="@(Model.Detailed ? 10 : 9)">Ödünç raporu için kayıt bulunamadı.</td>
+                        </tr>
+                    }
+                    else
+                    {
+                        foreach (var loan in Model.Loans)
+                        {
+                            var badgeClass = loan.Durum switch
+                            {
+                                "Oduncte" => "badge badge-info",
+                                "Gecikti" => "badge badge-danger",
+                                "IadeEdildi" => "badge badge-ok",
+                                "IptalEdildi" => "badge badge-muted",
+                                _ => "badge"
+                            };
+
+                            var statusText = loan.Durum switch
+                            {
+                                "Oduncte" => "Ödünçte",
+                                "Gecikti" => "Gecikti",
+                                "IadeEdildi" => "İade Edildi",
+                                "IptalEdildi" => "İptal Edildi",
+                                _ => loan.Durum
+                            };
+
+                            <tr>
+                                <td>@loan.Id</td>
+                                <td>@loan.KitapAdi</td>
+                                <td>@(loan.KitapKopyaBarkod ?? "-")</td>
+                                <td>@loan.UyeAdiSoyadi</td>
+                                <td>@loan.VerilisTarihi.ToString("dd.MM.yyyy")</td>
+                                <td>@loan.PlanlananIadeTarihi.ToString("dd.MM.yyyy")</td>
+                                <td>@(loan.IadeTarihi?.ToString("dd.MM.yyyy") ?? "-")</td>
+                                <td><span class="@badgeClass">@statusText</span></td>
+                                @if (Model.Detailed)
+                                {
+                                    <td>@(loan.AktifMi ? "Evet" : "Hayır")</td>
+                                }
+                                <td class="no-print">
+                                    <a class="btn btn-light"
+                                           asp-controller="Loans"
+                                           asp-action="Details"
+                                           asp-route-id="@loan.Id">
+                                        Detay
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+
+@if (Model.ReportType == "Stock")
+{
+    <div class="report-section">
+        <div class="section-header">
+            <div class="section-title">Kitap Stok Raporu</div>
+            <div class="section-count">@Model.StockSummary.Count kitap</div>
+        </div>
+
+        <div class="mini-grid">
+            <div class="mini-box">
+                <div class="mini-value">@totalCopies</div>
+                <div class="mini-label">Toplam Kopya</div>
+            </div>
+
+            <div class="mini-box">
+                <div class="mini-value">@availableCopies</div>
+                <div class="mini-label">Müsait</div>
+            </div>
+
+            <div class="mini-box">
+                <div class="mini-value">@loanedCopies</div>
+                <div class="mini-label">Ödünçte</div>
+            </div>
+
+            <div class="mini-box">
+                <div class="mini-value">@lostCopies</div>
+                <div class="mini-label">Kayıp</div>
+            </div>
+
+            <div class="mini-box">
+                <div class="mini-value">@damagedCopies</div>
+                <div class="mini-label">Hasarlı</div>
+            </div>
+        </div>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Kitap ID</th>
+                        <th>Kitap Adı</th>
+                        <th>Toplam</th>
+                        <th>Müsait</th>
+                        <th>Ödünçte</th>
+                        <th>Gecikti</th>
+                        <th>Kayıp</th>
+                        <th>Hasarlı</th>
+                        @if (Model.Detailed)
+                        {
+                            <th>Pasif</th>
+                        }
+                        <th class="no-print">Kopyalar</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @if (Model.StockSummary.Count == 0)
+                    {
+                        <tr>
+                            <td colspan="@(Model.Detailed ? 10 : 9)">Stok raporu için kayıt bulunamadı.</td>
+                        </tr>
+                    }
+                    else
+                    {
+                        foreach (var item in Model.StockSummary)
+                        {
+                            <tr>
+                                <td>@item.KitapId</td>
+                                <td>@item.KitapAdi</td>
+                                <td>@item.ToplamKopya</td>
+                                <td><span class="badge badge-ok">@item.Musait</span></td>
+                                <td><span class="badge badge-info">@item.Oduncte</span></td>
+                                <td><span class="badge badge-danger">@item.Gecikti</span></td>
+                                <td><span class="badge badge-warning">@item.Kayip</span></td>
+                                <td><span class="badge badge-warning">@item.Hasarli</span></td>
+                                @if (Model.Detailed)
+                                {
+                                    <td><span class="badge badge-muted">@item.Pasif</span></td>
+                                }
+                                <td class="no-print">
+                                    <a class="btn btn-light"
+                                           asp-controller="BookCopies"
+                                           asp-action="Index"
+                                           asp-route-kitapId="@item.KitapId">
+                                        Kopyalar
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+
+<script>
+    const reportForm = document.getElementById("reportFilterForm");
+
+    if (reportForm) {
+        reportForm.addEventListener("submit", function () {
+            const formData = new FormData(reportForm);
+            const query = new URLSearchParams(formData).toString();
+
+            localStorage.setItem("nexlibrary_last_report", query);
+        });
+    }
+
+    function printDetailed() {
+        document.body.classList.remove("print-table-only");
+        window.print();
+    }
+
+    function printTableOnly() {
+        document.body.classList.add("print-table-only");
+        window.print();
+
+        setTimeout(function () {
+            document.body.classList.remove("print-table-only");
+        }, 500);
+    }
+
+    function printPdf() {
+        document.body.classList.remove("print-table-only");
+        window.print();
+    }
+
+    function saveFavoriteReport() {
+        const formData = new FormData(reportForm);
+        const query = new URLSearchParams(formData).toString();
+
+        localStorage.setItem("nexlibrary_favorite_report", query);
+        alert("Favori rapor kaydedildi.");
+    }
+
+    function openFavoriteReport() {
+        const query = localStorage.getItem("nexlibrary_favorite_report");
+
+        if (!query) {
+            alert("Henüz favori rapor kaydedilmemiş.");
+            return;
+        }
+
+        window.location.href = "/Reports?" + query;
+    }
+
+    function openLastReport() {
+        const query = localStorage.getItem("nexlibrary_last_report");
+
+        if (!query) {
+            alert("Henüz son kullanılan rapor yok.");
+            return;
+        }
+
+        window.location.href = "/Reports?" + query;
+    }
+</script>
