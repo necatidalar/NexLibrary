@@ -1,7 +1,77 @@
-﻿@model DashboardSummaryResponse
+﻿@model NexLibrary.Contracts.Dashboard.DashboardSummaryResponse
 
 @{
     ViewData["Title"] = "Dashboard";
+
+    var today = DateTime.Today;
+
+    var weeklyStats = Enumerable.Range(0, 7)
+        .Select(offset =>
+        {
+            var date = today.AddDays(-6 + offset);
+
+            return new
+            {
+                Label = date.ToString("dd.MM"),
+                Odunc = Model.SonOduncler.Count(x => x.VerilisTarihi.Date == date),
+                Iade = Model.SonOduncler.Count(x => x.IadeTarihi.HasValue && x.IadeTarihi.Value.Date == date)
+            };
+        })
+        .ToList();
+
+    var maxWeeklyValue = weeklyStats
+        .SelectMany(x => new[] { x.Odunc, x.Iade })
+        .DefaultIfEmpty(1)
+        .Max();
+
+    maxWeeklyValue = maxWeeklyValue <= 0 ? 1 : maxWeeklyValue;
+
+    var topBooks = Model.SonOduncler
+        .GroupBy(x => x.KitapAdi)
+        .Select(x => new
+        {
+            KitapAdi = x.Key,
+            Sayi = x.Count()
+        })
+        .OrderByDescending(x => x.Sayi)
+        .ThenBy(x => x.KitapAdi)
+        .Take(5)
+        .ToList();
+
+    var topMembers = Model.SonOduncler
+        .GroupBy(x => x.UyeAdiSoyadi)
+        .Select(x => new
+        {
+            UyeAdiSoyadi = x.Key,
+            Sayi = x.Count()
+        })
+        .OrderByDescending(x => x.Sayi)
+        .ThenBy(x => x.UyeAdiSoyadi)
+        .Take(5)
+        .ToList();
+
+    var maxTopBookValue = topBooks.Select(x => x.Sayi).DefaultIfEmpty(1).Max();
+    maxTopBookValue = maxTopBookValue <= 0 ? 1 : maxTopBookValue;
+
+    var maxTopMemberValue = topMembers.Select(x => x.Sayi).DefaultIfEmpty(1).Max();
+    maxTopMemberValue = maxTopMemberValue <= 0 ? 1 : maxTopMemberValue;
+
+    var stockTotalForChart = Model.MusaitKopya
+        + Model.OdunctekiKopya
+        + Model.GecikenOdunc
+        + Model.KayipKopya
+        + Model.HasarliKopya;
+
+    stockTotalForChart = stockTotalForChart <= 0 ? 1 : stockTotalForChart;
+
+    var stockItems = new[]
+    {
+        new { Label = "Müsait", Value = Model.MusaitKopya, ClassName = "bar-success" },
+        new { Label = "Ödünçte", Value = Model.OdunctekiKopya, ClassName = "bar-info" },
+        new { Label = "Geciken", Value = Model.GecikenOdunc, ClassName = "bar-danger" },
+        new { Label = "Kayıp", Value = Model.KayipKopya, ClassName = "bar-warning" },
+        new { Label = "Hasarlı", Value = Model.HasarliKopya, ClassName = "bar-orange" }
+    };
 }
 
 <style>
@@ -28,17 +98,31 @@
         font-size: 14px;
     }
 
-    .refresh-link {
+    .btn {
+        border: none;
         background: #34495e;
         color: white;
-        text-decoration: none;
-        padding: 10px 16px;
+        padding: 10px 15px;
         border-radius: 8px;
-        font-weight: 600;
+        font-weight: 700;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 14px;
+        white-space: nowrap;
     }
 
-        .refresh-link:hover {
+        .btn:hover {
             background: #405c78;
+        }
+
+    .btn-light {
+        background: #e5e7eb;
+        color: #111827;
+    }
+
+        .btn-light:hover {
+            background: #d1d5db;
         }
 
     .alert {
@@ -52,7 +136,7 @@
 
     .cards {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(185px, 1fr));
         gap: 16px;
         margin-bottom: 24px;
     }
@@ -82,12 +166,20 @@
         font-size: 13px;
     }
 
+    .grid-2 {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 18px;
+        margin-bottom: 22px;
+    }
+
     .section {
         background: white;
         border-radius: 14px;
         box-shadow: 0 1px 4px rgba(0,0,0,0.06);
         border: 1px solid #eef0f3;
         overflow: hidden;
+        margin-bottom: 22px;
     }
 
     .section-header {
@@ -96,6 +188,7 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
+        gap: 12px;
     }
 
     .section-title {
@@ -108,9 +201,129 @@
         font-size: 14px;
     }
 
+    .section-body {
+        padding: 18px;
+    }
+
+    .chart-row {
+        display: grid;
+        grid-template-columns: 70px 1fr 1fr 50px;
+        gap: 10px;
+        align-items: center;
+        margin-bottom: 12px;
+        font-size: 13px;
+    }
+
+    .chart-label {
+        color: #374151;
+        font-weight: 700;
+    }
+
+    .bar-track {
+        background: #eef0f3;
+        height: 12px;
+        border-radius: 999px;
+        overflow: hidden;
+    }
+
+    .bar {
+        height: 100%;
+        border-radius: 999px;
+        min-width: 3px;
+    }
+
+    .bar-info {
+        background: #93c5fd;
+    }
+
+    .bar-success {
+        background: #86efac;
+    }
+
+    .bar-danger {
+        background: #fca5a5;
+    }
+
+    .bar-warning {
+        background: #fde68a;
+    }
+
+    .bar-orange {
+        background: #fdba74;
+    }
+
+    .chart-value {
+        color: #6b7280;
+        font-weight: 700;
+        text-align: right;
+    }
+
+    .rank-list {
+        display: flex;
+        flex-direction: column;
+        gap: 13px;
+    }
+
+    .rank-item {
+        display: grid;
+        grid-template-columns: 1fr 70px;
+        gap: 12px;
+        align-items: center;
+    }
+
+    .rank-title {
+        font-size: 14px;
+        font-weight: 700;
+        margin-bottom: 6px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .rank-count {
+        font-size: 13px;
+        color: #6b7280;
+        font-weight: 700;
+        text-align: right;
+    }
+
+    .stock-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 14px;
+    }
+
+    .stock-item {
+        background: #f9fafb;
+        border: 1px solid #eef0f3;
+        border-radius: 12px;
+        padding: 14px;
+    }
+
+    .stock-label {
+        color: #6b7280;
+        font-size: 13px;
+        font-weight: 700;
+        margin-bottom: 6px;
+    }
+
+    .stock-value {
+        font-size: 24px;
+        font-weight: 800;
+        margin-bottom: 10px;
+    }
+
+    .stock-bar {
+        background: #e5e7eb;
+        border-radius: 999px;
+        height: 10px;
+        overflow: hidden;
+    }
+
     table {
         width: 100%;
         border-collapse: collapse;
+        min-width: 950px;
     }
 
     th {
@@ -119,12 +332,19 @@
         padding: 12px;
         font-size: 14px;
         border-bottom: 1px solid #eef0f3;
+        white-space: nowrap;
     }
 
     td {
         padding: 12px;
         border-bottom: 1px solid #eef0f3;
         font-size: 14px;
+        white-space: nowrap;
+        vertical-align: middle;
+    }
+
+    .table-wrapper {
+        overflow-x: auto;
     }
 
     .badge {
@@ -134,6 +354,7 @@
         font-size: 12px;
         font-weight: 700;
         background: #edf2f7;
+        color: #374151;
     }
 
     .badge-ok {
@@ -150,15 +371,46 @@
         background: #e5e7eb;
         color: #374151;
     }
+
+    .quick-actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    @@media (max-width: 1000px) {
+        .grid-2 {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @@media (max-width: 800px) {
+        .dashboard-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .chart-row {
+            grid-template-columns: 55px 1fr;
+        }
+
+        .chart-value {
+            text-align: left;
+        }
+    }
 </style>
 
 <div class="dashboard-header">
     <div>
         <div class="dashboard-title">Dashboard</div>
-        <div class="dashboard-subtitle">NexLibrary genel özet ve son ödünç kayıtları</div>
+        <div class="dashboard-subtitle">NexLibrary genel özet, grafikler ve gelişmiş istatistikler</div>
     </div>
 
-    <a class="refresh-link" asp-controller="Dashboard" asp-action="Index">Yenile</a>
+    <div class="quick-actions">
+        <a class="btn btn-light" asp-controller="Dashboard" asp-action="Index">Yenile</a>
+        <a class="btn" asp-controller="Loans" asp-action="Create">Yeni Ödünç</a>
+        <a class="btn" asp-controller="Books" asp-action="Create">Yeni Kitap</a>
+    </div>
 </div>
 
 @if (ViewBag.ErrorMessage is not null)
@@ -230,56 +482,211 @@
     </div>
 </div>
 
+<div class="grid-2">
+    <div class="section">
+        <div class="section-header">
+            <div class="section-title">Son 7 Gün Ödünç / İade Grafiği</div>
+            <div class="section-count">Ödünç ve iade karşılaştırması</div>
+        </div>
+
+        <div class="section-body">
+            @foreach (var item in weeklyStats)
+            {
+                var loanWidth = (int)Math.Round(item.Odunc * 100.0 / maxWeeklyValue);
+                var returnWidth = (int)Math.Round(item.Iade * 100.0 / maxWeeklyValue);
+
+                <div class="chart-row">
+                    <div class="chart-label">@item.Label</div>
+
+                    <div>
+                        <div class="bar-track" title="Ödünç">
+                            <div class="bar bar-info" style="width:@($"{loanWidth}%")"></div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="bar-track" title="İade">
+                            <div class="bar bar-success" style="width:@($"{returnWidth}%")"></div>
+                        </div>
+                    </div>
+
+                    <div class="chart-value">@item.Odunc / @item.Iade</div>
+                </div>
+            }
+
+            <div style="margin-top:14px;color:#6b7280;font-size:13px;">
+                Mavi: ödünç, yeşil: iade
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-header">
+            <div class="section-title">Stok Durum Grafiği</div>
+            <div class="section-count">Kopya durum dağılımı</div>
+        </div>
+
+        <div class="section-body">
+            <div class="stock-grid">
+                @foreach (var item in stockItems)
+                {
+                    var percent = (int)Math.Round(item.Value * 100.0 / stockTotalForChart);
+
+                    <div class="stock-item">
+                        <div class="stock-label">@item.Label</div>
+                        <div class="stock-value">@item.Value</div>
+
+                        <div class="stock-bar">
+                            <div class="bar @item.ClassName" style="width:@($"{percent}%")"></div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="grid-2">
+    <div class="section">
+        <div class="section-header">
+            <div class="section-title">En Çok Ödünç Verilen Kitaplar</div>
+            <div class="section-count">Son kayıtlar üzerinden</div>
+        </div>
+
+        <div class="section-body">
+            @if (topBooks.Count == 0)
+            {
+                <div>Henüz ödünç verisi bulunmuyor.</div>
+            }
+            else
+            {
+                <div class="rank-list">
+                    @foreach (var item in topBooks)
+                    {
+                        var percent = (int)Math.Round(item.Sayi * 100.0 / maxTopBookValue);
+
+                        <div class="rank-item">
+                            <div>
+                                <div class="rank-title">@item.KitapAdi</div>
+                                <div class="bar-track">
+                                    <div class="bar bar-info" style="width:@($"{percent}%")"></div>
+                                </div>
+                            </div>
+
+                            <div class="rank-count">@item.Sayi kayıt</div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-header">
+            <div class="section-title">En Aktif Üyeler</div>
+            <div class="section-count">Son kayıtlar üzerinden</div>
+        </div>
+
+        <div class="section-body">
+            @if (topMembers.Count == 0)
+            {
+                <div>Henüz üye ödünç verisi bulunmuyor.</div>
+            }
+            else
+            {
+                <div class="rank-list">
+                    @foreach (var item in topMembers)
+                    {
+                        var percent = (int)Math.Round(item.Sayi * 100.0 / maxTopMemberValue);
+
+                        <div class="rank-item">
+                            <div>
+                                <div class="rank-title">@item.UyeAdiSoyadi</div>
+                                <div class="bar-track">
+                                    <div class="bar bar-success" style="width:@($"{percent}%")"></div>
+                                </div>
+                            </div>
+
+                            <div class="rank-count">@item.Sayi kayıt</div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
 <div class="section">
     <div class="section-header">
         <div class="section-title">Son Ödünç Kayıtları</div>
         <div class="section-count">@Model.SonOduncler.Count kayıt</div>
     </div>
 
-    <table>
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Kitap</th>
-                <th>Barkod</th>
-                <th>Üye</th>
-                <th>Veriliş</th>
-                <th>Planlanan İade</th>
-                <th>İade</th>
-                <th>Durum</th>
-            </tr>
-        </thead>
-        <tbody>
-            @if (Model.SonOduncler.Count == 0)
-            {
+    <div class="table-wrapper">
+        <table>
+            <thead>
                 <tr>
-                    <td colspan="8">Henüz ödünç kaydı bulunmuyor.</td>
+                    <th>ID</th>
+                    <th>Kitap</th>
+                    <th>Barkod</th>
+                    <th>Üye</th>
+                    <th>Veriliş</th>
+                    <th>Planlanan İade</th>
+                    <th>İade</th>
+                    <th>Durum</th>
+                    <th>İşlem</th>
                 </tr>
-            }
-            else
-            {
-                foreach (var item in Model.SonOduncler)
-                {
-                    var badgeClass = item.Durum switch
-                    {
-                        "IadeEdildi" => "badge badge-ok",
-                        "Gecikti" => "badge badge-danger",
-                        "IptalEdildi" => "badge badge-muted",
-                        _ => "badge"
-                    };
+            </thead>
 
+            <tbody>
+                @if (Model.SonOduncler.Count == 0)
+                {
                     <tr>
-                        <td>@item.Id</td>
-                        <td>@item.KitapAdi</td>
-                        <td>@(item.Barkod ?? "-")</td>
-                        <td>@item.UyeAdiSoyadi</td>
-                        <td>@item.VerilisTarihi.ToString("dd.MM.yyyy")</td>
-                        <td>@item.PlanlananIadeTarihi.ToString("dd.MM.yyyy")</td>
-                        <td>@(item.IadeTarihi?.ToString("dd.MM.yyyy") ?? "-")</td>
-                        <td><span class="@badgeClass">@item.Durum</span></td>
+                        <td colspan="9">Henüz ödünç kaydı bulunmuyor.</td>
                     </tr>
                 }
-            }
-        </tbody>
-    </table>
+                else
+                {
+                    foreach (var item in Model.SonOduncler)
+                    {
+                        var badgeClass = item.Durum switch
+                        {
+                            "IadeEdildi" => "badge badge-ok",
+                            "Gecikti" => "badge badge-danger",
+                            "IptalEdildi" => "badge badge-muted",
+                            _ => "badge"
+                        };
+
+                        var statusText = item.Durum switch
+                        {
+                            "Oduncte" => "Ödünçte",
+                            "IadeEdildi" => "İade Edildi",
+                            "Gecikti" => "Gecikti",
+                            "IptalEdildi" => "İptal Edildi",
+                            _ => item.Durum
+                        };
+
+                        <tr>
+                            <td>@item.Id</td>
+                            <td>@item.KitapAdi</td>
+                            <td>@(item.Barkod ?? "-")</td>
+                            <td>@item.UyeAdiSoyadi</td>
+                            <td>@item.VerilisTarihi.ToString("dd.MM.yyyy")</td>
+                            <td>@item.PlanlananIadeTarihi.ToString("dd.MM.yyyy")</td>
+                            <td>@(item.IadeTarihi?.ToString("dd.MM.yyyy") ?? "-")</td>
+                            <td><span class="@badgeClass">@statusText</span></td>
+                            <td>
+                                <a class="btn btn-light"
+                                       asp-controller="Loans"
+                                       asp-action="Details"
+                                       asp-route-id="@item.Id">
+                                    Detay
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
 </div>
