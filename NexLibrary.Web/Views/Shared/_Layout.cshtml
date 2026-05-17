@@ -23,12 +23,18 @@
                 background: #232d3c;
                 color: white;
                 padding: 20px 15px;
+                display: flex;
+                flex-direction: column;
             }
 
             .brand {
                 font-size: 22px;
                 font-weight: 700;
                 margin-bottom: 30px;
+            }
+
+            .menu {
+                flex: 1;
             }
 
             .menu-link {
@@ -42,47 +48,105 @@
                 font-weight: 600;
             }
 
-            .menu-link:hover {
-                background: #405c78;
+                .menu-link:hover {
+                    background: #405c78;
+                }
+
+            .user-box {
+                margin-top: 20px;
+                padding-top: 15px;
+                border-top: 1px solid rgba(255,255,255,0.15);
             }
+
+            .user-name {
+                font-size: 14px;
+                font-weight: 700;
+                color: white;
+                margin-bottom: 10px;
+                word-break: break-word;
+            }
+
+            .logout-form {
+                margin: 0;
+            }
+
+            .logout-button {
+                width: 100%;
+                border: none;
+                background: #991b1b;
+                color: white;
+                padding: 10px 12px;
+                border-radius: 8px;
+                font-weight: 700;
+                cursor: pointer;
+            }
+
+                .logout-button:hover {
+                    background: #7f1d1d;
+                }
 
             .content {
                 flex: 1;
                 padding: 25px;
+                overflow-x: auto;
             }
 
-            .topbar {
-                background: white;
-                border-radius: 12px;
-                padding: 18px 22px;
-                margin-bottom: 20px;
-                box-shadow: 0 1px 4px rgba(0,0,0,0.06);
-            }
+            @@media (max-width: 900px) {
+                .layout {
+                    flex-direction: column;
+                }
 
-            .topbar-title {
-                font-size: 24px;
-                font-weight: 700;
+                .sidebar {
+                    width: auto;
+                }
+
+                .content {
+                    padding: 15px;
+                }
             }
     </style>
 </head>
+
 <body>
     <div class="layout">
         <aside class="sidebar">
             <div class="brand">NexLibrary</div>
 
-            <a class="menu-link" asp-controller="Dashboard" asp-action="Index">Dashboard</a>
-            <a class="menu-link" asp-controller="Books" asp-action="Index">Kitaplar</a>
-            <a class="menu-link" asp-controller="Members" asp-action="Index">Üyeler</a>
-            <a class="menu-link" asp-controller="Loans" asp-action="Index">Ödünç İşlemleri</a>
-            <a class="menu-link" asp-controller="BookCopies" asp-action="Index">Kitap Kopyaları</a>
-            <a class="menu-link" asp-controller="FormFields" asp-action="Index">Form Alanları</a>
-            <a class="menu-link" asp-controller="Reports" asp-action="Index">Raporlar</a>
-            <a class="menu-link" asp-controller="Users" asp-action="Index">Kullanıcılar</a>
+            <nav class="menu">
+                <a class="menu-link" asp-controller="Dashboard" asp-action="Index">Dashboard</a>
+                <a class="menu-link" asp-controller="Books" asp-action="Index">Kitaplar</a>
+                <a class="menu-link" asp-controller="Members" asp-action="Index">Üyeler</a>
+                <a class="menu-link" asp-controller="Loans" asp-action="Index">Ödünç İşlemleri</a>
+                <a class="menu-link" asp-controller="BookCopies" asp-action="Index">Kitap Kopyaları</a>
+                <a class="menu-link" asp-controller="Reports" asp-action="Index">Raporlar</a>
+
+                @if (User.IsInRole("ADMIN"))
+                {
+                    <a class="menu-link" asp-controller="FormFields" asp-action="Index">Form Alanları</a>
+                    <a class="menu-link" asp-controller="Users" asp-action="Index">Kullanıcılar</a>
+                }
+            </nav>
+
+            <div class="user-box">
+                <div class="user-name">
+                    @(User.FindFirst("AdSoyad")?.Value ?? User.Identity?.Name)
+                </div>
+
+                <form class="logout-form" method="post" asp-controller="Account" asp-action="Logout">
+                    @Html.AntiForgeryToken()
+
+                    <button class="logout-button" type="submit">
+                        Çıkış
+                    </button>
+                </form>
+            </div>
         </aside>
 
         <main class="content">
             @RenderBody()
         </main>
     </div>
+
+    @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

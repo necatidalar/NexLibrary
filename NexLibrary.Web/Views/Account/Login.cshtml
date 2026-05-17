@@ -1,0 +1,186 @@
+﻿@model NexLibrary.Web.ViewModels.Auth.LoginViewModel
+
+@{
+    Layout = null;
+    ViewData["Title"] = "Giriş Yap";
+}
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8" />
+    <title>NexLibrary - Giriş Yap</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <style>
+            * {
+                box-sizing: border-box;
+            }
+
+            body {
+                margin: 0;
+                min-height: 100vh;
+                font-family: Arial, sans-serif;
+                background: linear-gradient(135deg, #111827, #1f2937, #34495e);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 24px;
+            }
+
+            .login-card {
+                width: 100%;
+                max-width: 430px;
+                background: white;
+                border-radius: 18px;
+                box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+                overflow: hidden;
+            }
+
+            .login-header {
+                padding: 28px 28px 18px 28px;
+                border-bottom: 1px solid #eef0f3;
+            }
+
+            .app-title {
+                font-size: 30px;
+                font-weight: 800;
+                color: #111827;
+                margin-bottom: 6px;
+            }
+
+            .app-subtitle {
+                color: #6b7280;
+                font-size: 14px;
+            }
+
+            .login-body {
+                padding: 24px 28px 28px 28px;
+            }
+
+            .alert-error {
+                background: #fee2e2;
+                color: #991b1b;
+                border: 1px solid #fecaca;
+                padding: 13px 14px;
+                border-radius: 10px;
+                margin-bottom: 16px;
+                font-size: 14px;
+                font-weight: 700;
+            }
+
+            .form-group {
+                display: flex;
+                flex-direction: column;
+                gap: 7px;
+                margin-bottom: 16px;
+            }
+
+                .form-group label {
+                    font-size: 13px;
+                    font-weight: 700;
+                    color: #374151;
+                }
+
+            .input {
+                width: 100%;
+                padding: 12px 13px;
+                border: 1px solid #d1d5db;
+                border-radius: 10px;
+                font-size: 15px;
+                outline: none;
+            }
+
+                .input:focus {
+                    border-color: #34495e;
+                }
+
+            .check-row {
+                display: flex;
+                gap: 8px;
+                align-items: center;
+                font-size: 14px;
+                color: #374151;
+                font-weight: 700;
+                margin-bottom: 18px;
+            }
+
+            .btn {
+                width: 100%;
+                border: none;
+                background: #34495e;
+                color: white;
+                padding: 13px 16px;
+                border-radius: 10px;
+                font-weight: 800;
+                cursor: pointer;
+                font-size: 15px;
+            }
+
+                .btn:hover {
+                    background: #405c78;
+                }
+
+            .login-footer {
+                padding: 0 28px 24px 28px;
+                color: #6b7280;
+                font-size: 13px;
+                text-align: center;
+            }
+    </style>
+</head>
+
+<body>
+    <div class="login-card">
+        <div class="login-header">
+            <div class="app-title">NexLibrary</div>
+            <div class="app-subtitle">Kütüphane yönetim sistemine giriş yap</div>
+        </div>
+
+        <div class="login-body">
+            @if (TempData["ErrorMessage"] is not null)
+            {
+                <div class="alert-error">@TempData["ErrorMessage"]</div>
+            }
+
+            <form method="post" asp-controller="Account" asp-action="Login">
+                @Html.AntiForgeryToken()
+
+                <input type="hidden" asp-for="ReturnUrl" />
+
+                <div class="form-group">
+                    <label>Kullanıcı Adı</label>
+                    <input class="input"
+                           asp-for="KullaniciAdi"
+                           autocomplete="username"
+                           placeholder="Örn: admin"
+                           required />
+                </div>
+
+                <div class="form-group">
+                    <label>Şifre</label>
+                    <input class="input"
+                           asp-for="Sifre"
+                           type="password"
+                           autocomplete="current-password"
+                           placeholder="Şifrenizi girin"
+                           required />
+                </div>
+
+                <label class="check-row">
+                    <input type="checkbox" asp-for="BeniHatirla" />
+                    Beni hatırla
+                </label>
+
+                <button class="btn" type="submit">
+                    Giriş Yap
+                </button>
+            </form>
+        </div>
+
+        <div class="login-footer">
+            Test için ADIM 39.2’de oluşturduğun admin kullanıcısını kullan.
+        </div>
+    </div>
+</body>
+</html>

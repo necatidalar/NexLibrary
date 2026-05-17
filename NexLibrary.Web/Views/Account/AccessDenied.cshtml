@@ -1,0 +1,49 @@
+﻿@{
+    ViewData["Title"] = "Yetkisiz Erişim";
+}
+
+<style>
+    .access-card {
+        background: white;
+        border-radius: 14px;
+        padding: 24px;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+        border: 1px solid #eef0f3;
+    }
+
+    .access-title {
+        font-size: 24px;
+        font-weight: 800;
+        color: #991b1b;
+        margin-bottom: 8px;
+    }
+
+    .access-desc {
+        color: #6b7280;
+        margin-bottom: 18px;
+    }
+
+    .btn {
+        border: none;
+        background: #34495e;
+        color: white;
+        padding: 10px 15px;
+        border-radius: 8px;
+        font-weight: 700;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+    }
+</style>
+
+<div class="access-card">
+    <div class="access-title">Yetkisiz Erişim</div>
+
+    <div class="access-desc">
+        Bu sayfayı görüntülemek için gerekli yetkiye sahip değilsiniz.
+    </div>
+
+    <a class="btn" asp-controller="Dashboard" asp-action="Index">
+        Dashboard'a Dön
+    </a>
+</div>

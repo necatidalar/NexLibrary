@@ -3,9 +3,11 @@ using NexLibrary.Contracts.Common;
 using NexLibrary.Contracts.Users;
 using NexLibrary.Web.Services;
 using NexLibrary.Web.ViewModels.Users;
+using Microsoft.AspNetCore.Authorization;
 
 namespace NexLibrary.Web.Controllers;
 
+[Authorize(Roles = "ADMIN")]
 public sealed class UsersController : Controller
 {
     private readonly UserApiService _userApiService;

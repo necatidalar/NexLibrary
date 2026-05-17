@@ -1,10 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using NexLibrary.Contracts.DynamicForms;
 using NexLibrary.Web.Services;
 using NexLibrary.Web.ViewModels.FormFields;
 
 namespace NexLibrary.Web.Controllers;
 
+[Authorize(Roles = "ADMIN")]
 public sealed class FormFieldsController : Controller
 {
     private readonly FormFieldApiService _formFieldApiService;
