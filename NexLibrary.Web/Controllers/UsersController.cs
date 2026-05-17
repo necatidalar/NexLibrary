@@ -1,13 +1,13 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using NexLibrary.Contracts.Common;
+using NexLibrary.Contracts.Permissions;
 using NexLibrary.Contracts.Users;
+using NexLibrary.Web.Security;
 using NexLibrary.Web.Services;
 using NexLibrary.Web.ViewModels.Users;
-using Microsoft.AspNetCore.Authorization;
 
 namespace NexLibrary.Web.Controllers;
 
-[Authorize(Roles = "ADMIN")]
 public sealed class UsersController : Controller
 {
     private readonly UserApiService _userApiService;
@@ -17,6 +17,7 @@ public sealed class UsersController : Controller
         _userApiService = userApiService;
     }
 
+    [PermissionAuthorize(PermissionCodes.UsersView)]
     public async Task<IActionResult> Index(
         string? search = null,
         int pageNumber = 1,
@@ -57,6 +58,7 @@ public sealed class UsersController : Controller
     }
 
     [HttpGet]
+    [PermissionAuthorize(PermissionCodes.UsersCreate)]
     public async Task<IActionResult> Create(CancellationToken cancellationToken = default)
     {
         var roles = await _userApiService.GetRolesAsync(cancellationToken);
@@ -72,6 +74,7 @@ public sealed class UsersController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [PermissionAuthorize(PermissionCodes.UsersCreate)]
     public async Task<IActionResult> Create(
         UserCreateViewModel model,
         CancellationToken cancellationToken = default)
@@ -106,8 +109,12 @@ public sealed class UsersController : Controller
         {
             KullaniciAdi = model.KullaniciAdi.Trim(),
             AdSoyad = model.AdSoyad.Trim(),
-            Eposta = string.IsNullOrWhiteSpace(model.Eposta) ? null : model.Eposta.Trim(),
-            Telefon = string.IsNullOrWhiteSpace(model.Telefon) ? null : model.Telefon.Trim(),
+            Eposta = string.IsNullOrWhiteSpace(model.Eposta)
+                ? null
+                : model.Eposta.Trim(),
+            Telefon = string.IsNullOrWhiteSpace(model.Telefon)
+                ? null
+                : model.Telefon.Trim(),
             Sifre = model.Sifre,
             RolId = model.RolId,
             AktifMi = model.AktifMi
@@ -129,6 +136,7 @@ public sealed class UsersController : Controller
     }
 
     [HttpGet]
+    [PermissionAuthorize(PermissionCodes.UsersEdit)]
     public async Task<IActionResult> Edit(
         int id,
         CancellationToken cancellationToken = default)
@@ -160,6 +168,7 @@ public sealed class UsersController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [PermissionAuthorize(PermissionCodes.UsersEdit)]
     public async Task<IActionResult> Edit(
         int id,
         UserEditViewModel model,
@@ -195,9 +204,15 @@ public sealed class UsersController : Controller
         {
             Id = model.Id,
             AdSoyad = model.AdSoyad.Trim(),
-            Eposta = string.IsNullOrWhiteSpace(model.Eposta) ? null : model.Eposta.Trim(),
-            Telefon = string.IsNullOrWhiteSpace(model.Telefon) ? null : model.Telefon.Trim(),
-            YeniSifre = string.IsNullOrWhiteSpace(model.YeniSifre) ? null : model.YeniSifre,
+            Eposta = string.IsNullOrWhiteSpace(model.Eposta)
+                ? null
+                : model.Eposta.Trim(),
+            Telefon = string.IsNullOrWhiteSpace(model.Telefon)
+                ? null
+                : model.Telefon.Trim(),
+            YeniSifre = string.IsNullOrWhiteSpace(model.YeniSifre)
+                ? null
+                : model.YeniSifre,
             RolId = model.RolId,
             AktifMi = model.AktifMi
         };

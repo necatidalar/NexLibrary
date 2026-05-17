@@ -13,4 +13,6 @@ public sealed class LoginResponse
     public string? Telefon { get; set; }
 
     public List<string> Roller { get; set; } = new();
+
+    public List<string> Yetkiler { get; set; } = new();
 }

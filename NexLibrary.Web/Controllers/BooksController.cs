@@ -1,7 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using NexLibrary.Contracts.BookCopies;
 using NexLibrary.Contracts.Books;
 using NexLibrary.Contracts.Common;
 using NexLibrary.Contracts.DynamicForms;
+using NexLibrary.Contracts.Permissions;
+using NexLibrary.Web.Security;
 using NexLibrary.Web.Services;
 using NexLibrary.Web.ViewModels.Books;
 
@@ -20,6 +23,7 @@ public sealed class BooksController : Controller
         _formFieldApiService = formFieldApiService;
     }
 
+    [PermissionAuthorize(PermissionCodes.BooksView)]
     public async Task<IActionResult> Index(
         string? search = null,
         int pageNumber = 1,
@@ -60,6 +64,7 @@ public sealed class BooksController : Controller
     }
 
     [HttpGet]
+    [PermissionAuthorize(PermissionCodes.BooksCreate)]
     public async Task<IActionResult> Create(CancellationToken cancellationToken = default)
     {
         var fields = await GetVisibleBookFieldsAsync(cancellationToken);
@@ -74,12 +79,12 @@ public sealed class BooksController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [PermissionAuthorize(PermissionCodes.BooksCreate)]
     public async Task<IActionResult> Create(
         BookCreateViewModel model,
         CancellationToken cancellationToken = default)
     {
         var visibleFields = await GetVisibleBookFieldsAsync(cancellationToken);
-
         model.Fields = visibleFields;
 
         if (string.IsNullOrWhiteSpace(model.KitapAdi))
@@ -127,6 +132,7 @@ public sealed class BooksController : Controller
     }
 
     [HttpGet]
+    [PermissionAuthorize(PermissionCodes.BooksEdit)]
     public async Task<IActionResult> Edit(
         int id,
         CancellationToken cancellationToken = default)
@@ -144,6 +150,7 @@ public sealed class BooksController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [PermissionAuthorize(PermissionCodes.BooksEdit)]
     public async Task<IActionResult> Edit(
         int id,
         BookEditViewModel model,
@@ -156,6 +163,7 @@ public sealed class BooksController : Controller
         }
 
         var allActiveFields = await GetAllActiveBookFieldsAsync(cancellationToken);
+
         var visibleFields = allActiveFields
             .Where(x => x.FormdaGorunsunMu)
             .OrderBy(x => x.SiraNo)
@@ -225,7 +233,6 @@ public sealed class BooksController : Controller
         if (result is null)
         {
             model.DynamicValues = BuildPostedDynamicValues(visibleFields);
-
             TempData["ErrorMessage"] = "Kitap güncellenemedi. Zorunlu alanları veya benzersiz alanları kontrol edin.";
             return View(model);
         }
@@ -233,6 +240,50 @@ public sealed class BooksController : Controller
         TempData["SuccessMessage"] = "Kitap başarıyla güncellendi.";
 
         return RedirectToAction(nameof(Index));
+    }
+
+    [PermissionAuthorize(PermissionCodes.BooksView)]
+    public async Task<IActionResult> Details(
+        int id,
+        CancellationToken cancellationToken = default)
+    {
+        if (id <= 0)
+        {
+            TempData["ErrorMessage"] = "Geçersiz kitap bilgisi.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        var book = await _bookApiService.GetByIdAsync(id, cancellationToken);
+
+        if (book is null)
+        {
+            TempData["ErrorMessage"] = "Kitap bulunamadı.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        var copies = new List<BookCopyListResponse>();
+
+        try
+        {
+            var bookCopyApiService = HttpContext.RequestServices
+                .GetRequiredService<BookCopyApiService>();
+
+            copies = await bookCopyApiService.GetByBookIdAsync(
+                id,
+                cancellationToken);
+        }
+        catch
+        {
+            copies = new List<BookCopyListResponse>();
+        }
+
+        var model = new BookDetailViewModel
+        {
+            Book = book,
+            Copies = copies
+        };
+
+        return View(model);
     }
 
     private async Task<BookEditViewModel?> CreateEditModelAsync(
@@ -299,7 +350,6 @@ public sealed class BooksController : Controller
         foreach (var field in fields.Where(x => !x.SistemAlaniMi))
         {
             var key = $"DynamicFields[{field.AlanKodu}]";
-
             var value = Request.Form[key].ToString();
 
             if (field.AlanTipi == "EvetHayir")
@@ -313,46 +363,5 @@ public sealed class BooksController : Controller
         }
 
         return values;
-    }
-
-    public async Task<IActionResult> Details(
-    int id,
-    CancellationToken cancellationToken = default)
-    {
-        if (id <= 0)
-        {
-            TempData["ErrorMessage"] = "Geçersiz kitap bilgisi.";
-            return RedirectToAction(nameof(Index));
-        }
-
-        var book = await _bookApiService.GetByIdAsync(id, cancellationToken);
-
-        if (book is null)
-        {
-            TempData["ErrorMessage"] = "Kitap bulunamadı.";
-            return RedirectToAction(nameof(Index));
-        }
-
-        var copies = new List<NexLibrary.Contracts.BookCopies.BookCopyListResponse>();
-
-        try
-        {
-            var bookCopyApiService = HttpContext.RequestServices
-                .GetRequiredService<BookCopyApiService>();
-
-            copies = await bookCopyApiService.GetByBookIdAsync(id, cancellationToken);
-        }
-        catch
-        {
-            copies = new List<NexLibrary.Contracts.BookCopies.BookCopyListResponse>();
-        }
-
-        var model = new BookDetailViewModel
-        {
-            Book = book,
-            Copies = copies
-        };
-
-        return View(model);
     }
 }

@@ -36,6 +36,8 @@ public sealed class AuthService : IAuthService
             .Query()
             .Include(x => x.KullaniciRolleri)
             .ThenInclude(x => x.Rol)
+            .ThenInclude(x => x.RolYetkileri)
+            .ThenInclude(x => x.YetkiTanimi)
             .FirstOrDefaultAsync(x => x.KullaniciAdi == kullaniciAdi, cancellationToken);
 
         if (user is null)
@@ -75,6 +77,15 @@ public sealed class AuthService : IAuthService
             return ApiResponse<LoginResponse>.Fail("Kullanıcıya atanmış aktif rol bulunamadı.");
         }
 
+        var permissionCodes = user.KullaniciRolleri
+            .Where(x => x.AktifMi && x.Rol.AktifMi)
+            .SelectMany(x => x.Rol.RolYetkileri
+                .Where(y => y.AktifMi && y.YetkiTanimi.AktifMi)
+                .Select(y => y.YetkiTanimi.YetkiKodu))
+            .Where(x => !string.IsNullOrWhiteSpace(x))
+            .Distinct()
+            .ToList();
+
         user.SonGirisTarihi = DateTime.UtcNow;
         user.GuncellemeTarihi = DateTime.UtcNow;
 
@@ -88,7 +99,8 @@ public sealed class AuthService : IAuthService
             AdSoyad = user.AdSoyad,
             Eposta = user.Eposta,
             Telefon = user.Telefon,
-            Roller = roleCodes
+            Roller = roleCodes,
+            Yetkiler = permissionCodes
         };
 
         return ApiResponse<LoginResponse>.Success(
@@ -103,14 +115,13 @@ public sealed class AuthService : IAuthService
     {
         var saltBytes = Convert.FromBase64String(storedSalt);
 
-        var hashBytes = Rfc2898DeriveBytes.Pbkdf2(
+        var enteredHashBytes = Rfc2898DeriveBytes.Pbkdf2(
             password,
             saltBytes,
             100_000,
             HashAlgorithmName.SHA256,
             32);
 
-        var enteredHashBytes = hashBytes;
         var storedHashBytes = Convert.FromBase64String(storedHash);
 
         return CryptographicOperations.FixedTimeEquals(

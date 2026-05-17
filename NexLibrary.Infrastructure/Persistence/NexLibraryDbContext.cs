@@ -28,6 +28,10 @@ public sealed class NexLibraryDbContext : DbContext
 
     public DbSet<KullaniciRol> KullaniciRolleri => Set<KullaniciRol>();
 
+    public DbSet<YetkiTanimi> YetkiTanimlari => Set<YetkiTanimi>();
+
+    public DbSet<RolYetki> RolYetkileri => Set<RolYetki>();
+
     public DbSet<AuditLog> AuditLoglari => Set<AuditLog>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

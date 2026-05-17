@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using NexLibrary.Contracts.BookCopies;
+using NexLibrary.Contracts.Permissions;
+using NexLibrary.Web.Security;
 using NexLibrary.Web.Services;
 using NexLibrary.Web.ViewModels.BookCopies;
 
@@ -14,6 +16,7 @@ public sealed class BookCopiesController : Controller
         _bookCopyApiService = bookCopyApiService;
     }
 
+    [PermissionAuthorize(PermissionCodes.BookCopiesView)]
     public async Task<IActionResult> Index(
         int? kitapId = null,
         CancellationToken cancellationToken = default)
@@ -31,6 +34,7 @@ public sealed class BookCopiesController : Controller
             var selectedBook = stockSummary.FirstOrDefault(x => x.KitapId == kitapId.Value);
 
             model.SelectedBookName = selectedBook?.KitapAdi;
+
             model.Copies = await _bookCopyApiService.GetByBookIdAsync(
                 kitapId.Value,
                 cancellationToken);
@@ -40,6 +44,7 @@ public sealed class BookCopiesController : Controller
     }
 
     [HttpGet]
+    [PermissionAuthorize(PermissionCodes.BookCopiesCreate)]
     public async Task<IActionResult> Create(
         int? kitapId = null,
         CancellationToken cancellationToken = default)
@@ -64,6 +69,7 @@ public sealed class BookCopiesController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [PermissionAuthorize(PermissionCodes.BookCopiesCreate)]
     public async Task<IActionResult> Create(
         BookCopyCreateViewModel model,
         CancellationToken cancellationToken = default)
@@ -113,15 +119,11 @@ public sealed class BookCopiesController : Controller
         return RedirectToAction(nameof(Index), new { kitapId = model.KitapId });
     }
 
-    private static string GenerateBarcode(int kitapId)
-    {
-        return $"BK-{kitapId}-{DateTime.Now:yyyyMMddHHmmss}";
-    }
-
+    [PermissionAuthorize(PermissionCodes.BookCopiesView)]
     public async Task<IActionResult> Details(
-    int kitapId,
-    int copyId,
-    CancellationToken cancellationToken = default)
+        int kitapId,
+        int copyId,
+        CancellationToken cancellationToken = default)
     {
         if (kitapId <= 0 || copyId <= 0)
         {
@@ -151,5 +153,10 @@ public sealed class BookCopiesController : Controller
         };
 
         return View(model);
+    }
+
+    private static string GenerateBarcode(int kitapId)
+    {
+        return $"BK-{kitapId}-{DateTime.Now:yyyyMMddHHmmss}";
     }
 }

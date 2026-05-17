@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NexLibrary.Contracts.Auth;
+using NexLibrary.Contracts.Permissions;
 using NexLibrary.Web.Services;
 using NexLibrary.Web.ViewModels.Auth;
 
@@ -56,7 +57,7 @@ public sealed class AccountController : Controller
         var request = new LoginRequest
         {
             KullaniciAdi = model.KullaniciAdi.Trim(),
-            Sifre = model.Sifre,
+            Sifre = model.Sifre
         };
 
         var loginResult = await _authApiService.LoginAsync(
@@ -84,6 +85,11 @@ public sealed class AccountController : Controller
         foreach (var role in loginResult.Roller)
         {
             claims.Add(new Claim(ClaimTypes.Role, role));
+        }
+
+        foreach (var permission in loginResult.Yetkiler)
+        {
+            claims.Add(new Claim(AppClaimTypes.Permission, permission));
         }
 
         var identity = new ClaimsIdentity(

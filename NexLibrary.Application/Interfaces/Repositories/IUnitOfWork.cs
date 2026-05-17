@@ -22,6 +22,10 @@ public interface IUnitOfWork : IDisposable
 
     IGenericRepository<KullaniciRol> KullaniciRolleri { get; }
 
+    IGenericRepository<YetkiTanimi> YetkiTanimlari { get; }
+
+    IGenericRepository<RolYetki> RolYetkileri { get; }
+
     IGenericRepository<AuditLog> AuditLoglari { get; }
 
 

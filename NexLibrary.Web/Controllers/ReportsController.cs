@@ -4,6 +4,8 @@ using NexLibrary.Contracts.BookCopies;
 using NexLibrary.Contracts.Books;
 using NexLibrary.Contracts.Loans;
 using NexLibrary.Contracts.Members;
+using NexLibrary.Contracts.Permissions;
+using NexLibrary.Web.Security;
 using NexLibrary.Web.Services;
 using NexLibrary.Web.ViewModels.Reports;
 
@@ -28,6 +30,7 @@ public sealed class ReportsController : Controller
         _bookCopyApiService = bookCopyApiService;
     }
 
+    [PermissionAuthorize(PermissionCodes.ReportsView)]
     public async Task<IActionResult> Index(
         string reportType = "Loans",
         string? search = null,
@@ -53,6 +56,7 @@ public sealed class ReportsController : Controller
         return View(model);
     }
 
+    [PermissionAuthorize(PermissionCodes.ReportsExport)]
     public async Task<IActionResult> ExportExcel(
         string reportType = "Loans",
         string? search = null,

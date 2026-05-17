@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using NexLibrary.Contracts.Common;
 using NexLibrary.Contracts.Loans;
+using NexLibrary.Contracts.Permissions;
+using NexLibrary.Web.Security;
 using NexLibrary.Web.Services;
 using NexLibrary.Web.ViewModels.Loans;
 
@@ -25,6 +27,7 @@ public sealed class LoansController : Controller
         _bookCopyApiService = bookCopyApiService;
     }
 
+    [PermissionAuthorize(PermissionCodes.LoansView)]
     public async Task<IActionResult> Index(
         string? search = null,
         bool overdueOnly = false,
@@ -90,6 +93,7 @@ public sealed class LoansController : Controller
     }
 
     [HttpGet]
+    [PermissionAuthorize(PermissionCodes.LoansCreate)]
     public async Task<IActionResult> Create(CancellationToken cancellationToken = default)
     {
         var model = await CreateLoanCreateModelAsync(cancellationToken);
@@ -99,6 +103,7 @@ public sealed class LoansController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [PermissionAuthorize(PermissionCodes.LoansCreate)]
     public async Task<IActionResult> Create(
         LoanCreateViewModel model,
         CancellationToken cancellationToken = default)
@@ -156,6 +161,7 @@ public sealed class LoansController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [PermissionAuthorize(PermissionCodes.LoansReturn)]
     public async Task<IActionResult> Return(
         int id,
         CancellationToken cancellationToken = default)
@@ -188,6 +194,7 @@ public sealed class LoansController : Controller
         return RedirectToAction(nameof(Index));
     }
 
+    [PermissionAuthorize(PermissionCodes.LoansView)]
     public async Task<IActionResult> Details(
         int id,
         CancellationToken cancellationToken = default)

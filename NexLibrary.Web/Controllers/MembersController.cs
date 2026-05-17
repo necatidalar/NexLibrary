@@ -3,6 +3,8 @@ using NexLibrary.Contracts.Common;
 using NexLibrary.Contracts.DynamicForms;
 using NexLibrary.Contracts.Loans;
 using NexLibrary.Contracts.Members;
+using NexLibrary.Contracts.Permissions;
+using NexLibrary.Web.Security;
 using NexLibrary.Web.Services;
 using NexLibrary.Web.ViewModels.Members;
 
@@ -21,6 +23,7 @@ public sealed class MembersController : Controller
         _formFieldApiService = formFieldApiService;
     }
 
+    [PermissionAuthorize(PermissionCodes.MembersView)]
     public async Task<IActionResult> Index(
         string? search = null,
         int pageNumber = 1,
@@ -61,6 +64,7 @@ public sealed class MembersController : Controller
     }
 
     [HttpGet]
+    [PermissionAuthorize(PermissionCodes.MembersCreate)]
     public async Task<IActionResult> Create(CancellationToken cancellationToken = default)
     {
         var fields = await GetVisibleMemberFieldsAsync(cancellationToken);
@@ -75,12 +79,12 @@ public sealed class MembersController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [PermissionAuthorize(PermissionCodes.MembersCreate)]
     public async Task<IActionResult> Create(
         MemberCreateViewModel model,
         CancellationToken cancellationToken = default)
     {
         var visibleFields = await GetVisibleMemberFieldsAsync(cancellationToken);
-
         model.Fields = visibleFields;
 
         if (string.IsNullOrWhiteSpace(model.UyeAdiSoyadi))
@@ -128,6 +132,7 @@ public sealed class MembersController : Controller
     }
 
     [HttpGet]
+    [PermissionAuthorize(PermissionCodes.MembersEdit)]
     public async Task<IActionResult> Edit(
         int id,
         CancellationToken cancellationToken = default)
@@ -145,6 +150,7 @@ public sealed class MembersController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [PermissionAuthorize(PermissionCodes.MembersEdit)]
     public async Task<IActionResult> Edit(
         int id,
         MemberEditViewModel model,
@@ -229,7 +235,6 @@ public sealed class MembersController : Controller
         if (result is null)
         {
             model.DynamicValues = BuildPostedDynamicValues(visibleFields);
-
             TempData["ErrorMessage"] = "Üye güncellenemedi. Zorunlu alanları veya benzersiz alanları kontrol edin.";
             return View(model);
         }
@@ -237,6 +242,57 @@ public sealed class MembersController : Controller
         TempData["SuccessMessage"] = "Üye başarıyla güncellendi.";
 
         return RedirectToAction(nameof(Index));
+    }
+
+    [PermissionAuthorize(PermissionCodes.MembersView)]
+    public async Task<IActionResult> Details(
+        int id,
+        CancellationToken cancellationToken = default)
+    {
+        if (id <= 0)
+        {
+            TempData["ErrorMessage"] = "Geçersiz üye bilgisi.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        var member = await _memberApiService.GetByIdAsync(id, cancellationToken);
+
+        if (member is null)
+        {
+            TempData["ErrorMessage"] = "Üye bulunamadı.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        var loans = new List<LoanListResponse>();
+
+        try
+        {
+            var loanApiService = HttpContext.RequestServices
+                .GetRequiredService<LoanApiService>();
+
+            var loanResult = await loanApiService.GetPagedAsync(
+                1,
+                1000,
+                member.UyeAdiSoyadi,
+                cancellationToken);
+
+            loans = loanResult?.Items
+                .Where(x => x.UyeId == member.Id)
+                .OrderByDescending(x => x.Id)
+                .ToList() ?? new List<LoanListResponse>();
+        }
+        catch
+        {
+            loans = new List<LoanListResponse>();
+        }
+
+        var model = new MemberDetailViewModel
+        {
+            Member = member,
+            Loans = loans
+        };
+
+        return View(model);
     }
 
     private async Task<MemberEditViewModel?> CreateEditModelAsync(
@@ -305,7 +361,6 @@ public sealed class MembersController : Controller
         foreach (var field in fields.Where(x => !x.SistemAlaniMi))
         {
             var key = $"DynamicFields[{field.AlanKodu}]";
-
             var value = Request.Form[key].ToString();
 
             if (field.AlanTipi == "EvetHayir")
@@ -319,55 +374,5 @@ public sealed class MembersController : Controller
         }
 
         return values;
-    }
-
-    public async Task<IActionResult> Details(
-    int id,
-    CancellationToken cancellationToken = default)
-    {
-        if (id <= 0)
-        {
-            TempData["ErrorMessage"] = "Geçersiz üye bilgisi.";
-            return RedirectToAction(nameof(Index));
-        }
-
-        var member = await _memberApiService.GetByIdAsync(id, cancellationToken);
-
-        if (member is null)
-        {
-            TempData["ErrorMessage"] = "Üye bulunamadı.";
-            return RedirectToAction(nameof(Index));
-        }
-
-        var loans = new List<LoanListResponse>();
-
-        try
-        {
-            var loanApiService = HttpContext.RequestServices
-                .GetRequiredService<LoanApiService>();
-
-            var loanResult = await loanApiService.GetPagedAsync(
-                1,
-                1000,
-                member.UyeAdiSoyadi,
-                cancellationToken);
-
-            loans = loanResult?.Items
-                .Where(x => x.UyeId == member.Id)
-                .OrderByDescending(x => x.Id)
-                .ToList() ?? new List<LoanListResponse>();
-        }
-        catch
-        {
-            loans = new List<LoanListResponse>();
-        }
-
-        var model = new MemberDetailViewModel
-        {
-            Member = member,
-            Loans = loans
-        };
-
-        return View(model);
     }
 }

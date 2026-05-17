@@ -1,4 +1,6 @@
-﻿<!DOCTYPE html>
+﻿@using NexLibrary.Contracts.Permissions
+
+<!DOCTYPE html>
 <html lang="tr">
 <head>
     <meta charset="utf-8" />
@@ -122,17 +124,47 @@
             <div class="brand">NexLibrary</div>
 
             <nav class="menu">
-                <a class="menu-link" asp-controller="Dashboard" asp-action="Index">Dashboard</a>
-                <a class="menu-link" asp-controller="Books" asp-action="Index">Kitaplar</a>
-                <a class="menu-link" asp-controller="Members" asp-action="Index">Üyeler</a>
-                <a class="menu-link" asp-controller="Loans" asp-action="Index">Ödünç İşlemleri</a>
-                <a class="menu-link" asp-controller="BookCopies" asp-action="Index">Kitap Kopyaları</a>
-                <a class="menu-link" asp-controller="Reports" asp-action="Index">Raporlar</a>
 
-                @if (User.IsInRole("ADMIN"))
+                <a class="menu-link" asp-controller="Dashboard" asp-action="Index">Dashboard</a>
+
+                @if (User.HasClaim(AppClaimTypes.Permission, PermissionCodes.BooksView))
+                {
+                    <a class="menu-link" asp-controller="Books" asp-action="Index">Kitaplar</a>
+                }
+
+                @if (User.HasClaim(AppClaimTypes.Permission, PermissionCodes.MembersView))
+                {
+                    <a class="menu-link" asp-controller="Members" asp-action="Index">Üyeler</a>
+                }
+
+                @if (User.HasClaim(AppClaimTypes.Permission, PermissionCodes.LoansView))
+                {
+                    <a class="menu-link" asp-controller="Loans" asp-action="Index">Ödünç İşlemleri</a>
+                }
+
+                @if (User.HasClaim(AppClaimTypes.Permission, PermissionCodes.BookCopiesView))
+                {
+                    <a class="menu-link" asp-controller="BookCopies" asp-action="Index">Kitap Kopyaları</a>
+                }
+
+                @if (User.HasClaim(AppClaimTypes.Permission, PermissionCodes.ReportsView))
+                {
+                    <a class="menu-link" asp-controller="Reports" asp-action="Index">Raporlar</a>
+                }
+
+                @if (User.HasClaim(AppClaimTypes.Permission, PermissionCodes.FormFieldsView))
                 {
                     <a class="menu-link" asp-controller="FormFields" asp-action="Index">Form Alanları</a>
+                }
+
+                @if (User.HasClaim(AppClaimTypes.Permission, PermissionCodes.UsersView))
+                {
                     <a class="menu-link" asp-controller="Users" asp-action="Index">Kullanıcılar</a>
+                }
+
+                @if (User.HasClaim(AppClaimTypes.Permission, PermissionCodes.PermissionsView))
+                {
+                    <a class="menu-link" asp-controller="Permissions" asp-action="Index">Yetki Yönetimi</a>
                 }
             </nav>
 

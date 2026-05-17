@@ -43,6 +43,7 @@ builder.Services.AddHttpClient<BookCopyApiService>(ConfigureApiClient);
 
 builder.Services.AddHttpClient<UserApiService>(ConfigureApiClient);
 builder.Services.AddHttpClient<AuthApiService>(ConfigureApiClient);
+builder.Services.AddHttpClient<PermissionApiService>(ConfigureApiClient);
 
 builder.Services
     .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
