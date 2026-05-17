@@ -40,5 +40,35 @@ public sealed class RolConfiguration : IEntityTypeConfiguration<Rol>
 
         builder.HasIndex(x => x.RolKodu)
             .IsUnique();
+
+        builder.HasData(
+            new Rol
+            {
+                Id = 1,
+                RolKodu = "ADMIN",
+                RolAdi = "Admin",
+                Aciklama = "Sistemde tüm işlemleri yapabilir.",
+                AktifMi = true,
+                OlusturmaTarihi = new DateTime(2026, 1, 1)
+            },
+            new Rol
+            {
+                Id = 2,
+                RolKodu = "PERSONEL",
+                RolAdi = "Personel",
+                Aciklama = "Kitap, üye, ödünç ve iade işlemlerini yapabilir.",
+                AktifMi = true,
+                OlusturmaTarihi = new DateTime(2026, 1, 1)
+            },
+            new Rol
+            {
+                Id = 3,
+                RolKodu = "GORUNTULEYICI",
+                RolAdi = "Görüntüleyici",
+                Aciklama = "Sadece listeleme, detay ve rapor görüntüleme işlemlerini yapabilir.",
+                AktifMi = true,
+                OlusturmaTarihi = new DateTime(2026, 1, 1)
+            }
+        );
     }
 }
