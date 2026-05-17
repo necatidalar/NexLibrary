@@ -1,0 +1,186 @@
+﻿@model NexLibrary.Web.ViewModels.Users.UserCreateViewModel
+
+@{
+    ViewData["Title"] = "Yeni Kullanıcı";
+}
+
+<style>
+    .page-header, .form-card {
+        background: white;
+        border-radius: 14px;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+        border: 1px solid #eef0f3;
+        margin-bottom: 20px;
+    }
+
+    .page-header {
+        padding: 18px 22px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .page-title {
+        font-size: 24px;
+        font-weight: 700;
+    }
+
+    .page-subtitle {
+        color: #6b7280;
+        margin-top: 4px;
+        font-size: 14px;
+    }
+
+    .btn {
+        border: none;
+        background: #34495e;
+        color: white;
+        padding: 10px 15px;
+        border-radius: 8px;
+        font-weight: 700;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .btn-light {
+        background: #e5e7eb;
+        color: #111827;
+    }
+
+    .alert-error {
+        background: #fee2e2;
+        color: #991b1b;
+        border: 1px solid #fecaca;
+        padding: 14px 16px;
+        border-radius: 10px;
+        margin-bottom: 18px;
+    }
+
+    .card-header {
+        padding: 16px 18px;
+        border-bottom: 1px solid #eef0f3;
+        font-size: 18px;
+        font-weight: 700;
+    }
+
+    .card-body {
+        padding: 18px;
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(240px, 1fr));
+        gap: 16px;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 7px;
+    }
+
+        .form-group label {
+            font-size: 13px;
+            font-weight: 700;
+            color: #374151;
+        }
+
+    .input, .select {
+        padding: 11px 12px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        font-size: 14px;
+    }
+
+    .check-row {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        padding: 11px 12px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        background: #f9fafb;
+    }
+
+    .form-actions {
+        margin-top: 22px;
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+    }
+</style>
+
+<div class="page-header">
+    <div>
+        <div class="page-title">Yeni Kullanıcı</div>
+        <div class="page-subtitle">Sisteme yeni kullanıcı ve rol tanımla</div>
+    </div>
+
+    <a class="btn btn-light" asp-controller="Users" asp-action="Index">Listeye Dön</a>
+</div>
+
+@if (TempData["ErrorMessage"] is not null)
+{
+    <div class="alert-error">@TempData["ErrorMessage"]</div>
+}
+
+<div class="form-card">
+    <div class="card-header">Kullanıcı Bilgileri</div>
+
+    <div class="card-body">
+        <form method="post" asp-controller="Users" asp-action="Create">
+            @Html.AntiForgeryToken()
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Kullanıcı Adı *</label>
+                    <input class="input" asp-for="KullaniciAdi" maxlength="100" required />
+                </div>
+
+                <div class="form-group">
+                    <label>Ad Soyad *</label>
+                    <input class="input" asp-for="AdSoyad" maxlength="150" required />
+                </div>
+
+                <div class="form-group">
+                    <label>E-posta</label>
+                    <input class="input" asp-for="Eposta" type="email" maxlength="150" />
+                </div>
+
+                <div class="form-group">
+                    <label>Telefon</label>
+                    <input class="input" asp-for="Telefon" maxlength="30" />
+                </div>
+
+                <div class="form-group">
+                    <label>Şifre *</label>
+                    <input class="input" asp-for="Sifre" type="password" minlength="6" required />
+                </div>
+
+                <div class="form-group">
+                    <label>Rol *</label>
+                    <select class="select" asp-for="RolId" required>
+                        <option value="">Rol seçiniz</option>
+                        @foreach (var role in Model.Roles)
+                        {
+                            <option value="@role.Id">@role.RolAdi</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Durum</label>
+                    <label class="check-row">
+                        <input type="checkbox" asp-for="AktifMi" />
+                        Aktif kullanıcı
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <a class="btn btn-light" asp-controller="Users" asp-action="Index">İptal</a>
+                <button class="btn" type="submit">Kaydet</button>
+            </div>
+        </form>
+    </div>
+</div>

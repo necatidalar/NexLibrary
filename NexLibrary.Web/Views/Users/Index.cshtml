@@ -1,0 +1,329 @@
+﻿@model NexLibrary.Web.ViewModels.Users.UsersIndexViewModel
+
+@{
+    ViewData["Title"] = "Kullanıcılar";
+
+    var totalPages = Model.Users.PageSize <= 0
+        ? 1
+        : (int)Math.Ceiling(Model.Users.TotalCount / (double)Model.Users.PageSize);
+
+    totalPages = totalPages <= 0 ? 1 : totalPages;
+}
+
+<style>
+    .page-header, .search-box, .table-card {
+        background: white;
+        border-radius: 14px;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+        border: 1px solid #eef0f3;
+        margin-bottom: 20px;
+    }
+
+    .page-header {
+        padding: 18px 22px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .page-title {
+        font-size: 24px;
+        font-weight: 700;
+    }
+
+    .page-subtitle {
+        color: #6b7280;
+        margin-top: 4px;
+        font-size: 14px;
+    }
+
+    .search-box {
+        padding: 16px;
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+
+    .search-input {
+        flex: 1;
+        padding: 11px 12px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        font-size: 14px;
+    }
+
+    .btn {
+        border: none;
+        background: #34495e;
+        color: white;
+        padding: 10px 15px;
+        border-radius: 8px;
+        font-weight: 700;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 14px;
+        white-space: nowrap;
+    }
+
+    .btn-light {
+        background: #e5e7eb;
+        color: #111827;
+    }
+
+    .alert {
+        background: #fff3cd;
+        color: #664d03;
+        border: 1px solid #ffecb5;
+        padding: 14px 16px;
+        border-radius: 10px;
+        margin-bottom: 18px;
+    }
+
+    .table-header {
+        padding: 16px 18px;
+        border-bottom: 1px solid #eef0f3;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .table-title {
+        font-size: 18px;
+        font-weight: 700;
+    }
+
+    .table-count {
+        color: #6b7280;
+        font-size: 14px;
+    }
+
+    .table-wrapper {
+        overflow-x: auto;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 950px;
+    }
+
+    th, td {
+        padding: 12px;
+        border-bottom: 1px solid #eef0f3;
+        text-align: left;
+        white-space: nowrap;
+        font-size: 14px;
+    }
+
+    th {
+        background: #f9fafb;
+    }
+
+    .badge {
+        display: inline-block;
+        padding: 5px 9px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 700;
+        background: #edf2f7;
+        color: #374151;
+        margin-right: 4px;
+    }
+
+    .badge-ok {
+        background: #dcfce7;
+        color: #166534;
+    }
+
+    .badge-passive {
+        background: #e5e7eb;
+        color: #374151;
+    }
+
+    .pagination {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 14px 18px;
+        border-top: 1px solid #eef0f3;
+    }
+
+    .pagination-actions {
+        display: flex;
+        gap: 8px;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 8px;
+    }
+</style>
+
+<div class="page-header">
+    <div>
+        <div class="page-title">Kullanıcılar</div>
+        <div class="page-subtitle">Sistem kullanıcıları, roller ve aktiflik durumları</div>
+    </div>
+
+    <div style="display:flex; gap:10px;">
+        <a class="btn btn-light" asp-controller="Users" asp-action="Index">Yenile</a>
+        <a class="btn" asp-controller="Users" asp-action="Create">Yeni Kullanıcı</a>
+    </div>
+</div>
+
+@if (ViewBag.ErrorMessage is not null)
+{
+    <div class="alert">@ViewBag.ErrorMessage</div>
+}
+
+@if (TempData["SuccessMessage"] is not null)
+{
+    <div class="alert" style="background:#dcfce7;color:#166534;border-color:#bbf7d0;">
+        @TempData["SuccessMessage"]
+    </div>
+}
+
+@if (TempData["ErrorMessage"] is not null)
+{
+    <div class="alert" style="background:#fee2e2;color:#991b1b;border-color:#fecaca;">
+        @TempData["ErrorMessage"]
+    </div>
+}
+
+<form class="search-box" method="get" asp-controller="Users" asp-action="Index">
+    <input class="search-input"
+           type="text"
+           name="search"
+           value="@Model.Search"
+           placeholder="Kullanıcı adı, ad soyad, e-posta veya telefon ara..." />
+
+    <select class="search-input" style="max-width:130px;" name="pageSize">
+        @foreach (var size in Model.PageSizeOptions)
+        {
+            if (Model.PageSize == size)
+            {
+                <option value="@size" selected>@size kayıt</option>
+            }
+            else
+            {
+                <option value="@size">@size kayıt</option>
+            }
+        }
+    </select>
+
+    <button class="btn" type="submit">Ara</button>
+    <a class="btn btn-light" asp-controller="Users" asp-action="Index">Temizle</a>
+</form>
+
+<div class="table-card">
+    <div class="table-header">
+        <div class="table-title">Kullanıcı Listesi</div>
+        <div class="table-count">Toplam kayıt: @Model.Users.TotalCount</div>
+    </div>
+
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Kullanıcı Adı</th>
+                    <th>Ad Soyad</th>
+                    <th>E-posta</th>
+                    <th>Telefon</th>
+                    <th>Roller</th>
+                    <th>Durum</th>
+                    <th>Oluşturma</th>
+                    <th>İşlem</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @if (Model.Users.Items.Count == 0)
+                {
+                    <tr>
+                        <td colspan="9">Kullanıcı kaydı bulunamadı.</td>
+                    </tr>
+                }
+                else
+                {
+                    foreach (var user in Model.Users.Items)
+                    {
+                        <tr>
+                            <td>@user.Id</td>
+                            <td>@user.KullaniciAdi</td>
+                            <td>@user.AdSoyad</td>
+                            <td>@(user.Eposta ?? "-")</td>
+                            <td>@(user.Telefon ?? "-")</td>
+                            <td>
+                                @if (user.Roller.Count == 0)
+                                {
+                                    <span>-</span>
+                                }
+                                else
+                                {
+                                    foreach (var role in user.Roller)
+                                    {
+                                        <span class="badge">@role</span>
+                                    }
+                                }
+                            </td>
+                            <td>
+                                @if (user.AktifMi)
+                                {
+                                    <span class="badge badge-ok">Aktif</span>
+                                }
+                                else
+                                {
+                                    <span class="badge badge-passive">Pasif</span>
+                                }
+                            </td>
+                            <td>@user.OlusturmaTarihi.ToString("dd.MM.yyyy")</td>
+                            <td>
+                                <div class="action-buttons">
+                                    <a class="btn btn-light"
+                                           asp-controller="Users"
+                                           asp-action="Edit"
+                                           asp-route-id="@user.Id">
+                                        Düzenle
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="pagination">
+        <div>Sayfa @Model.Users.PageNumber / @totalPages</div>
+
+        <div class="pagination-actions">
+            @if (Model.Users.PageNumber > 1)
+            {
+                <a class="btn btn-light"
+                       asp-controller="Users"
+                       asp-action="Index"
+                       asp-route-search="@Model.Search"
+                       asp-route-pageNumber="@(Model.Users.PageNumber - 1)"
+                       asp-route-pageSize="@Model.PageSize">
+                    Önceki
+                </a>
+            }
+
+            @if (Model.Users.PageNumber < totalPages)
+            {
+                <a class="btn"
+                       asp-controller="Users"
+                       asp-action="Index"
+                       asp-route-search="@Model.Search"
+                       asp-route-pageNumber="@(Model.Users.PageNumber + 1)"
+                       asp-route-pageSize="@Model.PageSize">
+                    Sonraki
+                </a>
+            }
+        </div>
+    </div>
+</div>
