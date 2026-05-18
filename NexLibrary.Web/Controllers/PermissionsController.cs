@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using NexLibrary.Contracts.Permissions;
+using NexLibrary.Contracts.Users;
 using NexLibrary.Web.Security;
 using NexLibrary.Web.Services;
 using NexLibrary.Web.ViewModels.Permissions;
@@ -10,13 +11,16 @@ public sealed class PermissionsController : Controller
 {
     private readonly PermissionApiService _permissionApiService;
     private readonly UserApiService _userApiService;
+    private readonly ILogger<PermissionsController> _logger;
 
     public PermissionsController(
         PermissionApiService permissionApiService,
-        UserApiService userApiService)
+        UserApiService userApiService,
+        ILogger<PermissionsController> logger)
     {
         _permissionApiService = permissionApiService;
         _userApiService = userApiService;
+        _logger = logger;
     }
 
     [PermissionAuthorize(PermissionCodes.PermissionsView)]
@@ -24,7 +28,7 @@ public sealed class PermissionsController : Controller
         int? rolId = null,
         CancellationToken cancellationToken = default)
     {
-        var roles = await _userApiService.GetRolesAsync(cancellationToken);
+        var roles = await GetRolesSafeAsync(cancellationToken);
 
         if (roles.Count == 0)
         {
@@ -39,7 +43,7 @@ public sealed class PermissionsController : Controller
         var selectedRole = roles.FirstOrDefault(x => x.Id == selectedRoleId)
             ?? roles.First();
 
-        var matrix = await _permissionApiService.GetRolePermissionMatrixAsync(
+        var matrix = await GetRolePermissionMatrixSafeAsync(
             selectedRole.Id,
             cancellationToken);
 
@@ -47,18 +51,9 @@ public sealed class PermissionsController : Controller
         {
             TempData["ErrorMessage"] = "Yetki matrisi alınamadı.";
 
-            return View(new PermissionsIndexViewModel
-            {
-                SelectedRoleId = selectedRole.Id,
-                SelectedRoleName = selectedRole.RolAdi,
-                SelectedRoleCode = selectedRole.RolKodu,
-                Roles = roles.Select(x => new PermissionRoleOptionViewModel
-                {
-                    RolId = x.Id,
-                    RolKodu = x.RolKodu,
-                    RolAdi = x.RolAdi
-                }).ToList()
-            });
+            return View(CreateEmptyViewModel(
+                roles,
+                selectedRole));
         }
 
         var model = CreateViewModel(
@@ -81,15 +76,20 @@ public sealed class PermissionsController : Controller
             return RedirectToAction(nameof(Index));
         }
 
+        var selectedPermissionIds = model.SelectedPermissionIds is null
+            ? new List<int>()
+            : model.SelectedPermissionIds
+                .Where(x => x > 0)
+                .Distinct()
+                .ToList();
+
         var request = new RolePermissionUpdateRequest
         {
             RolId = model.SelectedRoleId,
-            YetkiTanimiIds = model.SelectedPermissionIds
-                .Distinct()
-                .ToList()
+            YetkiTanimiIds = selectedPermissionIds
         };
 
-        var result = await _permissionApiService.UpdateRolePermissionsAsync(
+        var result = await UpdateRolePermissionsSafeAsync(
             model.SelectedRoleId,
             request,
             cancellationToken);
@@ -105,8 +105,87 @@ public sealed class PermissionsController : Controller
         return RedirectToAction(nameof(Index), new { rolId = model.SelectedRoleId });
     }
 
+    private async Task<List<RoleResponse>> GetRolesSafeAsync(
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            return await _userApiService.GetRolesAsync(cancellationToken)
+                ?? new List<RoleResponse>();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Rol listesi alınırken hata oluştu.");
+            return new List<RoleResponse>();
+        }
+    }
+
+    private async Task<RolePermissionMatrixResponse?> GetRolePermissionMatrixSafeAsync(
+        int roleId,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            return await _permissionApiService.GetRolePermissionMatrixAsync(
+                roleId,
+                cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(
+                ex,
+                "Rol yetki matrisi alınırken hata oluştu. RolId: {RolId}",
+                roleId);
+
+            return null;
+        }
+    }
+
+    private async Task<object?> UpdateRolePermissionsSafeAsync(
+        int roleId,
+        RolePermissionUpdateRequest request,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            return await _permissionApiService.UpdateRolePermissionsAsync(
+                roleId,
+                request,
+                cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(
+                ex,
+                "Rol yetkileri güncellenirken hata oluştu. RolId: {RolId}",
+                roleId);
+
+            return null;
+        }
+    }
+
+    private static PermissionsIndexViewModel CreateEmptyViewModel(
+        IReadOnlyCollection<RoleResponse> roles,
+        RoleResponse selectedRole)
+    {
+        return new PermissionsIndexViewModel
+        {
+            SelectedRoleId = selectedRole.Id,
+            SelectedRoleName = selectedRole.RolAdi,
+            SelectedRoleCode = selectedRole.RolKodu,
+            Roles = roles.Select(x => new PermissionRoleOptionViewModel
+            {
+                RolId = x.Id,
+                RolKodu = x.RolKodu,
+                RolAdi = x.RolAdi
+            }).ToList(),
+            Groups = new List<PermissionGroupViewModel>(),
+            SelectedPermissionIds = new List<int>()
+        };
+    }
+
     private static PermissionsIndexViewModel CreateViewModel(
-        IReadOnlyCollection<NexLibrary.Contracts.Users.RoleResponse> roles,
+        IReadOnlyCollection<RoleResponse> roles,
         RolePermissionMatrixResponse matrix)
     {
         var groups = matrix.Yetkiler

@@ -10,16 +10,20 @@ using NexLibrary.Web.ViewModels.Auth;
 
 namespace NexLibrary.Web.Controllers;
 
-[AllowAnonymous]
 public sealed class AccountController : Controller
 {
     private readonly AuthApiService _authApiService;
+    private readonly ILogger<AccountController> _logger;
 
-    public AccountController(AuthApiService authApiService)
+    public AccountController(
+        AuthApiService authApiService,
+        ILogger<AccountController> logger)
     {
         _authApiService = authApiService;
+        _logger = logger;
     }
 
+    [AllowAnonymous]
     [HttpGet]
     public IActionResult Login(string? returnUrl = null)
     {
@@ -36,6 +40,7 @@ public sealed class AccountController : Controller
         return View(model);
     }
 
+    [AllowAnonymous]
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Login(
@@ -60,9 +65,19 @@ public sealed class AccountController : Controller
             Sifre = model.Sifre
         };
 
-        var loginResult = await _authApiService.LoginAsync(
-            request,
-            cancellationToken);
+        LoginResponse? loginResult;
+
+        try
+        {
+            loginResult = await _authApiService.LoginAsync(
+                request,
+                cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Giriş işlemi sırasında hata oluştu.");
+            loginResult = null;
+        }
 
         if (loginResult is null)
         {
@@ -82,12 +97,12 @@ public sealed class AccountController : Controller
             claims.Add(new Claim(ClaimTypes.Email, loginResult.Eposta));
         }
 
-        foreach (var role in loginResult.Roller)
+        foreach (var role in loginResult.Roller ?? new List<string>())
         {
             claims.Add(new Claim(ClaimTypes.Role, role));
         }
 
-        foreach (var permission in loginResult.Yetkiler)
+        foreach (var permission in loginResult.Yetkiler ?? new List<string>())
         {
             claims.Add(new Claim(AppClaimTypes.Permission, permission));
         }
@@ -109,7 +124,8 @@ public sealed class AccountController : Controller
             principal,
             authProperties);
 
-        if (!string.IsNullOrWhiteSpace(model.ReturnUrl) && Url.IsLocalUrl(model.ReturnUrl))
+        if (!string.IsNullOrWhiteSpace(model.ReturnUrl) &&
+            Url.IsLocalUrl(model.ReturnUrl))
         {
             return LocalRedirect(model.ReturnUrl);
         }
@@ -128,6 +144,7 @@ public sealed class AccountController : Controller
         return RedirectToAction(nameof(Login));
     }
 
+    [AllowAnonymous]
     [HttpGet]
     public IActionResult AccessDenied()
     {

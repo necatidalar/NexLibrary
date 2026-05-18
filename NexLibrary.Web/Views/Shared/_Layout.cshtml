@@ -1,4 +1,25 @@
 ﻿@using NexLibrary.Contracts.Permissions
+@using NexLibrary.Web.Security
+
+@{
+    var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
+}
+
+@functions {
+    bool HasPermission(string permission)
+    {
+        return User.HasClaim(AppClaimTypes.Permission, permission);
+    }
+
+    string ActiveClass(string controller)
+    {
+        var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
+
+        return string.Equals(currentController, controller, StringComparison.OrdinalIgnoreCase)
+            ? "active"
+            : string.Empty;
+    }
+}
 
 <!DOCTYPE html>
 <html lang="tr">
@@ -58,6 +79,10 @@
 
                 .menu-link:hover {
                     background: #405c78;
+                }
+
+                .menu-link.active {
+                    background: #2563eb;
                 }
 
             .user-box {
@@ -124,47 +149,85 @@
             <div class="brand">NexLibrary</div>
 
             <nav class="menu">
-
-                <a class="menu-link" asp-controller="Dashboard" asp-action="Index">Dashboard</a>
-
-                @if (User.HasClaim(AppClaimTypes.Permission, PermissionCodes.BooksView))
+                @if (HasPermission(PermissionCodes.DashboardView))
                 {
-                    <a class="menu-link" asp-controller="Books" asp-action="Index">Kitaplar</a>
+                    <a class="menu-link @ActiveClass("Dashboard")"
+                       asp-controller="Dashboard"
+                       asp-action="Index">
+                        Dashboard
+                    </a>
                 }
 
-                @if (User.HasClaim(AppClaimTypes.Permission, PermissionCodes.MembersView))
+                @if (HasPermission(PermissionCodes.BooksView))
                 {
-                    <a class="menu-link" asp-controller="Members" asp-action="Index">Üyeler</a>
+                    <a class="menu-link @ActiveClass("Books")"
+                       asp-controller="Books"
+                       asp-action="Index">
+                        Kitaplar
+                    </a>
                 }
 
-                @if (User.HasClaim(AppClaimTypes.Permission, PermissionCodes.LoansView))
+                @if (HasPermission(PermissionCodes.MembersView))
                 {
-                    <a class="menu-link" asp-controller="Loans" asp-action="Index">Ödünç İşlemleri</a>
+                    <a class="menu-link @ActiveClass("Members")"
+                       asp-controller="Members"
+                       asp-action="Index">
+                        Üyeler
+                    </a>
                 }
 
-                @if (User.HasClaim(AppClaimTypes.Permission, PermissionCodes.BookCopiesView))
+                @if (HasPermission(PermissionCodes.LoansView))
                 {
-                    <a class="menu-link" asp-controller="BookCopies" asp-action="Index">Kitap Kopyaları</a>
+                    <a class="menu-link @ActiveClass("Loans")"
+                       asp-controller="Loans"
+                       asp-action="Index">
+                        Ödünç İşlemleri
+                    </a>
                 }
 
-                @if (User.HasClaim(AppClaimTypes.Permission, PermissionCodes.ReportsView))
+                @if (HasPermission(PermissionCodes.BookCopiesView))
                 {
-                    <a class="menu-link" asp-controller="Reports" asp-action="Index">Raporlar</a>
+                    <a class="menu-link @ActiveClass("BookCopies")"
+                       asp-controller="BookCopies"
+                       asp-action="Index">
+                        Kitap Kopyaları
+                    </a>
                 }
 
-                @if (User.HasClaim(AppClaimTypes.Permission, PermissionCodes.FormFieldsView))
+                @if (HasPermission(PermissionCodes.ReportsView))
                 {
-                    <a class="menu-link" asp-controller="FormFields" asp-action="Index">Form Alanları</a>
+                    <a class="menu-link @ActiveClass("Reports")"
+                       asp-controller="Reports"
+                       asp-action="Index">
+                        Raporlar
+                    </a>
                 }
 
-                @if (User.HasClaim(AppClaimTypes.Permission, PermissionCodes.UsersView))
+                @if (HasPermission(PermissionCodes.FormFieldsView))
                 {
-                    <a class="menu-link" asp-controller="Users" asp-action="Index">Kullanıcılar</a>
+                    <a class="menu-link @ActiveClass("FormFields")"
+                       asp-controller="FormFields"
+                       asp-action="Index">
+                        Form Alanları
+                    </a>
                 }
 
-                @if (User.HasClaim(AppClaimTypes.Permission, PermissionCodes.PermissionsView))
+                @if (HasPermission(PermissionCodes.UsersView))
                 {
-                    <a class="menu-link" asp-controller="Permissions" asp-action="Index">Yetki Yönetimi</a>
+                    <a class="menu-link @ActiveClass("Users")"
+                       asp-controller="Users"
+                       asp-action="Index">
+                        Kullanıcılar
+                    </a>
+                }
+
+                @if (HasPermission(PermissionCodes.PermissionsView))
+                {
+                    <a class="menu-link @ActiveClass("Permissions")"
+                       asp-controller="Permissions"
+                       asp-action="Index">
+                        Yetki Yönetimi
+                    </a>
                 }
             </nav>
 
@@ -173,7 +236,10 @@
                     @(User.FindFirst("AdSoyad")?.Value ?? User.Identity?.Name)
                 </div>
 
-                <form class="logout-form" method="post" asp-controller="Account" asp-action="Logout">
+                <form class="logout-form"
+                      method="post"
+                      asp-controller="Account"
+                      asp-action="Logout">
                     @Html.AntiForgeryToken()
 
                     <button class="logout-button" type="submit">

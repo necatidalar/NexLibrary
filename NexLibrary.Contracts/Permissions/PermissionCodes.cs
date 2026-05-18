@@ -38,4 +38,7 @@ public static class PermissionCodes
 
     public const string PermissionsView = "Permissions.View";
     public const string PermissionsManage = "Permissions.Manage";
+
+    public const string FormFieldsCreate = "FormFields.Create";
+    public const string FormFieldsManage = "FormFields.Manage";
 }

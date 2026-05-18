@@ -9,24 +9,35 @@ namespace NexLibrary.Web.Controllers;
 
 public sealed class FormFieldsController : Controller
 {
-    private readonly FormFieldApiService _formFieldApiService;
+    private const string DefaultModuleCode = "Kitaplar";
 
-    public FormFieldsController(FormFieldApiService formFieldApiService)
+    private static readonly HashSet<string> AllowedModules = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "Kitaplar",
+        "Uyeler",
+        "Odunc",
+        "Kopyalar"
+    };
+
+    private readonly FormFieldApiService _formFieldApiService;
+    private readonly ILogger<FormFieldsController> _logger;
+
+    public FormFieldsController(
+        FormFieldApiService formFieldApiService,
+        ILogger<FormFieldsController> logger)
     {
         _formFieldApiService = formFieldApiService;
+        _logger = logger;
     }
 
     [PermissionAuthorize(PermissionCodes.FormFieldsView)]
     public async Task<IActionResult> Index(
-        string modulKodu = "Kitaplar",
+        string modulKodu = DefaultModuleCode,
         CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrWhiteSpace(modulKodu))
-        {
-            modulKodu = "Kitaplar";
-        }
+        modulKodu = NormalizeModuleCode(modulKodu);
 
-        var fields = await _formFieldApiService.GetByModuleAsync(
+        var fields = await GetFieldsByModuleSafeAsync(
             modulKodu,
             cancellationToken);
 
@@ -43,12 +54,14 @@ public sealed class FormFieldsController : Controller
     }
 
     [HttpGet]
-    [PermissionAuthorize(PermissionCodes.FormFieldsEdit)]
+    [PermissionAuthorize(PermissionCodes.FormFieldsCreate)]
     public async Task<IActionResult> Create(
-        string modulKodu = "Kitaplar",
+        string modulKodu = DefaultModuleCode,
         CancellationToken cancellationToken = default)
     {
-        var existingFields = await _formFieldApiService.GetByModuleAsync(
+        modulKodu = NormalizeModuleCode(modulKodu);
+
+        var existingFields = await GetFieldsByModuleSafeAsync(
             modulKodu,
             cancellationToken);
 
@@ -71,32 +84,18 @@ public sealed class FormFieldsController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    [PermissionAuthorize(PermissionCodes.FormFieldsEdit)]
+    [PermissionAuthorize(PermissionCodes.FormFieldsCreate)]
     public async Task<IActionResult> Create(
         FormFieldCreateViewModel model,
         CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrWhiteSpace(model.ModulKodu))
-        {
-            TempData["ErrorMessage"] = "Modül kodu zorunludur.";
-            return View(model);
-        }
+        model.ModulKodu = NormalizeModuleCode(model.ModulKodu);
 
-        if (string.IsNullOrWhiteSpace(model.AlanAdi))
-        {
-            TempData["ErrorMessage"] = "Alan adı zorunludur.";
-            return View(model);
-        }
+        var validationMessage = ValidateCreateModel(model);
 
-        if (string.IsNullOrWhiteSpace(model.AlanKodu))
+        if (validationMessage is not null)
         {
-            TempData["ErrorMessage"] = "Alan kodu zorunludur.";
-            return View(model);
-        }
-
-        if (string.IsNullOrWhiteSpace(model.AlanTipi))
-        {
-            TempData["ErrorMessage"] = "Alan tipi zorunludur.";
+            TempData["ErrorMessage"] = validationMessage;
             return View(model);
         }
 
@@ -110,15 +109,9 @@ public sealed class FormFieldsController : Controller
             MaksimumKarakter = model.MaksimumKarakter,
             ZorunluMu = model.ZorunluMu,
             BenzersizMi = model.BenzersizMi,
-            VarsayilanDeger = string.IsNullOrWhiteSpace(model.VarsayilanDeger)
-                ? null
-                : model.VarsayilanDeger.Trim(),
-            Aciklama = string.IsNullOrWhiteSpace(model.Aciklama)
-                ? null
-                : model.Aciklama.Trim(),
-            Placeholder = string.IsNullOrWhiteSpace(model.Placeholder)
-                ? null
-                : model.Placeholder.Trim(),
+            VarsayilanDeger = NormalizeNullableText(model.VarsayilanDeger),
+            Aciklama = NormalizeNullableText(model.Aciklama),
+            Placeholder = NormalizeNullableText(model.Placeholder),
             SiraNo = model.SiraNo,
             FormdaGorunsunMu = model.FormdaGorunsunMu,
             ListedeGorunsunMu = model.ListedeGorunsunMu,
@@ -127,7 +120,7 @@ public sealed class FormFieldsController : Controller
             HizliKayittaGorunsunMu = model.HizliKayittaGorunsunMu
         };
 
-        var result = await _formFieldApiService.CreateAsync(
+        var result = await CreateFieldSafeAsync(
             request,
             cancellationToken);
 
@@ -146,10 +139,18 @@ public sealed class FormFieldsController : Controller
     [PermissionAuthorize(PermissionCodes.FormFieldsEdit)]
     public async Task<IActionResult> Edit(
         int id,
-        string modulKodu = "Kitaplar",
+        string modulKodu = DefaultModuleCode,
         CancellationToken cancellationToken = default)
     {
-        var fields = await _formFieldApiService.GetByModuleAsync(
+        modulKodu = NormalizeModuleCode(modulKodu);
+
+        if (id <= 0)
+        {
+            TempData["ErrorMessage"] = "Geçersiz form alanı.";
+            return RedirectToAction(nameof(Index), new { modulKodu });
+        }
+
+        var fields = await GetFieldsByModuleSafeAsync(
             modulKodu,
             cancellationToken);
 
@@ -198,6 +199,8 @@ public sealed class FormFieldsController : Controller
         FormFieldEditViewModel model,
         CancellationToken cancellationToken = default)
     {
+        model.ModulKodu = NormalizeModuleCode(model.ModulKodu);
+
         if (id <= 0 || id != model.Id)
         {
             TempData["ErrorMessage"] = "Geçersiz form alanı.";
@@ -218,15 +221,9 @@ public sealed class FormFieldsController : Controller
             MaksimumKarakter = model.MaksimumKarakter,
             ZorunluMu = model.ZorunluMu,
             BenzersizMi = model.BenzersizMi,
-            VarsayilanDeger = string.IsNullOrWhiteSpace(model.VarsayilanDeger)
-                ? null
-                : model.VarsayilanDeger.Trim(),
-            Aciklama = string.IsNullOrWhiteSpace(model.Aciklama)
-                ? null
-                : model.Aciklama.Trim(),
-            Placeholder = string.IsNullOrWhiteSpace(model.Placeholder)
-                ? null
-                : model.Placeholder.Trim(),
+            VarsayilanDeger = NormalizeNullableText(model.VarsayilanDeger),
+            Aciklama = NormalizeNullableText(model.Aciklama),
+            Placeholder = NormalizeNullableText(model.Placeholder),
             SiraNo = model.SiraNo,
             FormdaGorunsunMu = model.FormdaGorunsunMu,
             ListedeGorunsunMu = model.ListedeGorunsunMu,
@@ -236,7 +233,7 @@ public sealed class FormFieldsController : Controller
             AktifMi = model.AktifMi
         };
 
-        var result = await _formFieldApiService.UpdateAsync(
+        var result = await UpdateFieldSafeAsync(
             id,
             request,
             cancellationToken);
@@ -254,14 +251,22 @@ public sealed class FormFieldsController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    [PermissionAuthorize(PermissionCodes.FormFieldsEdit)]
+    [PermissionAuthorize(PermissionCodes.FormFieldsManage)]
     public async Task<IActionResult> SetActive(
         int id,
         string modulKodu,
         bool aktifMi,
         CancellationToken cancellationToken = default)
     {
-        var result = await _formFieldApiService.SetActiveAsync(
+        modulKodu = NormalizeModuleCode(modulKodu);
+
+        if (id <= 0)
+        {
+            TempData["ErrorMessage"] = "Geçersiz form alanı.";
+            return RedirectToAction(nameof(Index), new { modulKodu });
+        }
+
+        var result = await SetActiveSafeAsync(
             id,
             aktifMi,
             cancellationToken);
@@ -278,5 +283,142 @@ public sealed class FormFieldsController : Controller
         }
 
         return RedirectToAction(nameof(Index), new { modulKodu });
+    }
+
+    private async Task<List<FormFieldResponse>> GetFieldsByModuleSafeAsync(
+        string modulKodu,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            return await _formFieldApiService.GetByModuleAsync(
+                modulKodu,
+                cancellationToken) ?? new List<FormFieldResponse>();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(
+                ex,
+                "Form alanları alınırken hata oluştu. ModulKodu: {ModulKodu}",
+                modulKodu);
+
+            TempData["ErrorMessage"] = "Form alanları alınamadı.";
+            return new List<FormFieldResponse>();
+        }
+    }
+
+    private async Task<object?> CreateFieldSafeAsync(
+        FormFieldCreateRequest request,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            return await _formFieldApiService.CreateAsync(
+                request,
+                cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(
+                ex,
+                "Form alanı oluşturulurken hata oluştu. ModulKodu: {ModulKodu}, AlanKodu: {AlanKodu}",
+                request.ModulKodu,
+                request.AlanKodu);
+
+            return null;
+        }
+    }
+
+    private async Task<object?> UpdateFieldSafeAsync(
+        int id,
+        FormFieldUpdateRequest request,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            return await _formFieldApiService.UpdateAsync(
+                id,
+                request,
+                cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(
+                ex,
+                "Form alanı güncellenirken hata oluştu. Id: {Id}",
+                id);
+
+            return null;
+        }
+    }
+
+    private async Task<bool> SetActiveSafeAsync(
+        int id,
+        bool aktifMi,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            return await _formFieldApiService.SetActiveAsync(
+                id,
+                aktifMi,
+                cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(
+                ex,
+                "Form alanı aktif/pasif durumu güncellenirken hata oluştu. Id: {Id}, AktifMi: {AktifMi}",
+                id,
+                aktifMi);
+
+            return false;
+        }
+    }
+
+    private static string NormalizeModuleCode(string? modulKodu)
+    {
+        if (string.IsNullOrWhiteSpace(modulKodu))
+        {
+            return DefaultModuleCode;
+        }
+
+        var normalizedModuleCode = modulKodu.Trim();
+
+        return AllowedModules.Contains(normalizedModuleCode)
+            ? normalizedModuleCode
+            : DefaultModuleCode;
+    }
+
+    private static string? ValidateCreateModel(FormFieldCreateViewModel model)
+    {
+        if (string.IsNullOrWhiteSpace(model.ModulKodu))
+        {
+            return "Modül kodu zorunludur.";
+        }
+
+        if (string.IsNullOrWhiteSpace(model.AlanAdi))
+        {
+            return "Alan adı zorunludur.";
+        }
+
+        if (string.IsNullOrWhiteSpace(model.AlanKodu))
+        {
+            return "Alan kodu zorunludur.";
+        }
+
+        if (string.IsNullOrWhiteSpace(model.AlanTipi))
+        {
+            return "Alan tipi zorunludur.";
+        }
+
+        return null;
+    }
+
+    private static string? NormalizeNullableText(string? value)
+    {
+        return string.IsNullOrWhiteSpace(value)
+            ? null
+            : value.Trim();
     }
 }

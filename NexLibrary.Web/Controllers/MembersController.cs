@@ -12,15 +12,24 @@ namespace NexLibrary.Web.Controllers;
 
 public sealed class MembersController : Controller
 {
+    private const string MembersModuleName = "Uyeler";
+    private const string BooleanFieldType = "EvetHayir";
+
     private readonly MemberApiService _memberApiService;
     private readonly FormFieldApiService _formFieldApiService;
+    private readonly LoanApiService _loanApiService;
+    private readonly ILogger<MembersController> _logger;
 
     public MembersController(
         MemberApiService memberApiService,
-        FormFieldApiService formFieldApiService)
+        FormFieldApiService formFieldApiService,
+        LoanApiService loanApiService,
+        ILogger<MembersController> logger)
     {
         _memberApiService = memberApiService;
         _formFieldApiService = formFieldApiService;
+        _loanApiService = loanApiService;
+        _logger = logger;
     }
 
     [PermissionAuthorize(PermissionCodes.MembersView)]
@@ -101,18 +110,10 @@ public sealed class MembersController : Controller
 
         foreach (var field in visibleFields.Where(x => !x.SistemAlaniMi))
         {
-            var key = $"DynamicFields[{field.AlanKodu}]";
-            var value = Request.Form[key].ToString();
-
-            if (field.AlanTipi == "EvetHayir")
-            {
-                value = Request.Form.ContainsKey(key) ? "true" : "false";
-            }
-
             request.DinamikAlanlar.Add(new DynamicFieldValueRequest
             {
                 AlanKodu = field.AlanKodu,
-                Deger = string.IsNullOrWhiteSpace(value) ? null : value.Trim()
+                Deger = GetDynamicFieldValue(field)
             });
         }
 
@@ -203,27 +204,22 @@ public sealed class MembersController : Controller
 
         foreach (var field in allActiveFields.Where(x => !x.SistemAlaniMi))
         {
-            var key = $"DynamicFields[{field.AlanKodu}]";
             string? value;
 
             if (field.FormdaGorunsunMu)
             {
-                value = Request.Form[key].ToString();
-
-                if (field.AlanTipi == "EvetHayir")
-                {
-                    value = Request.Form.ContainsKey(key) ? "true" : "false";
-                }
+                value = GetDynamicFieldValue(field);
             }
             else
             {
                 currentDynamicValues.TryGetValue(field.AlanKodu, out value);
+                value = NormalizeDynamicValue(value);
             }
 
             request.DinamikAlanlar.Add(new DynamicFieldValueRequest
             {
                 AlanKodu = field.AlanKodu,
-                Deger = string.IsNullOrWhiteSpace(value) ? null : value.Trim()
+                Deger = value
             });
         }
 
@@ -267,10 +263,7 @@ public sealed class MembersController : Controller
 
         try
         {
-            var loanApiService = HttpContext.RequestServices
-                .GetRequiredService<LoanApiService>();
-
-            var loanResult = await loanApiService.GetPagedAsync(
+            var loanResult = await _loanApiService.GetPagedAsync(
                 1,
                 1000,
                 member.UyeAdiSoyadi,
@@ -281,8 +274,13 @@ public sealed class MembersController : Controller
                 .OrderByDescending(x => x.Id)
                 .ToList() ?? new List<LoanListResponse>();
         }
-        catch
+        catch (Exception ex)
         {
+            _logger.LogError(
+                ex,
+                "Üye ödünç geçmişi alınamadı. UyeId: {UyeId}",
+                member.Id);
+
             loans = new List<LoanListResponse>();
         }
 
@@ -329,7 +327,7 @@ public sealed class MembersController : Controller
         CancellationToken cancellationToken)
     {
         var fields = await _formFieldApiService.GetByModuleAsync(
-            "Uyeler",
+            MembersModuleName,
             cancellationToken);
 
         return fields
@@ -343,7 +341,7 @@ public sealed class MembersController : Controller
         CancellationToken cancellationToken)
     {
         var fields = await _formFieldApiService.GetByModuleAsync(
-            "Uyeler",
+            MembersModuleName,
             cancellationToken);
 
         return fields
@@ -360,19 +358,30 @@ public sealed class MembersController : Controller
 
         foreach (var field in fields.Where(x => !x.SistemAlaniMi))
         {
-            var key = $"DynamicFields[{field.AlanKodu}]";
-            var value = Request.Form[key].ToString();
-
-            if (field.AlanTipi == "EvetHayir")
-            {
-                value = Request.Form.ContainsKey(key) ? "true" : "false";
-            }
-
-            values[field.AlanKodu] = string.IsNullOrWhiteSpace(value)
-                ? null
-                : value.Trim();
+            values[field.AlanKodu] = GetDynamicFieldValue(field);
         }
 
         return values;
+    }
+
+    private string? GetDynamicFieldValue(FormFieldResponse field)
+    {
+        var key = $"DynamicFields[{field.AlanKodu}]";
+
+        if (field.AlanTipi == BooleanFieldType)
+        {
+            return Request.Form.ContainsKey(key) ? "true" : "false";
+        }
+
+        var value = Request.Form[key].ToString();
+
+        return NormalizeDynamicValue(value);
+    }
+
+    private static string? NormalizeDynamicValue(string? value)
+    {
+        return string.IsNullOrWhiteSpace(value)
+            ? null
+            : value.Trim();
     }
 }
