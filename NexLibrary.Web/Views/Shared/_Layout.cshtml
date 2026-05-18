@@ -1,10 +1,6 @@
 ﻿@using NexLibrary.Contracts.Permissions
 @using NexLibrary.Web.Security
 
-@{
-    var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
-}
-
 @functions {
     bool HasPermission(string permission)
     {
@@ -29,120 +25,23 @@
     <title>NexLibrary</title>
 
     <style>
-            body {
-                margin: 0;
-                font-family: "Segoe UI", Arial, sans-serif;
-                background: #f5f7fa;
-                color: #222;
-            }
-
-            .layout {
-                display: flex;
-                min-height: 100vh;
-                align-items: flex-start;
-            }
-
-            .sidebar {
-                width: 230px;
-                height: 100vh;
-                position: sticky;
-                top: 0;
-                background: #232d3c;
-                color: white;
-                padding: 20px 15px;
-                display: flex;
-                flex-direction: column;
-                box-sizing: border-box;
-                overflow-y: auto;
-            }
-
-            .brand {
-                font-size: 22px;
-                font-weight: 700;
-                margin-bottom: 30px;
-            }
-
-            .menu {
-                flex: 1;
-            }
-
-            .menu-link {
-                display: block;
-                color: white;
-                text-decoration: none;
-                background: #34495e;
-                padding: 13px 15px;
-                border-radius: 8px;
-                margin-bottom: 10px;
-                font-weight: 600;
-            }
-
-                .menu-link:hover {
-                    background: #405c78;
-                }
-
-                .menu-link.active {
-                    background: #2563eb;
-                }
-
-            .user-box {
-                margin-top: auto;
-                padding-top: 15px;
-                border-top: 1px solid rgba(255,255,255,0.15);
-            }
-
-            .user-name {
-                font-size: 14px;
-                font-weight: 700;
-                color: white;
-                margin-bottom: 10px;
-                word-break: break-word;
-            }
-
-            .logout-form {
-                margin: 0;
-            }
-
-            .logout-button {
-                width: 100%;
-                border: none;
-                background: #991b1b;
-                color: white;
-                padding: 10px 12px;
-                border-radius: 8px;
-                font-weight: 700;
-                cursor: pointer;
-            }
-
-                .logout-button:hover {
-                    background: #7f1d1d;
-                }
-
-            .content {
-                flex: 1;
-                padding: 25px;
-                overflow-x: auto;
-            }
-
-            @@media (max-width: 900px) {
-                .layout {
-                    flex-direction: column;
-                }
-
-                .sidebar {
-                    width: 100%;
-                    height: auto;
-                    position: static;
-                    overflow-y: visible;
-                }
-
-                .content {
-                    padding: 15px;
-                }
-            }
+        body { margin: 0; font-family: "Segoe UI", Arial, sans-serif; background: #f5f7fa; color: #222; }
+        .layout { display: flex; min-height: 100vh; align-items: flex-start; }
+        .sidebar { width: 230px; height: 100vh; position: sticky; top: 0; background: #232d3c; color: white; padding: 20px 15px; display: flex; flex-direction: column; box-sizing: border-box; overflow-y: auto; }
+        .brand { font-size: 22px; font-weight: 700; margin-bottom: 30px; }
+        .menu { flex: 1; }
+        .menu-link { display: block; color: white; text-decoration: none; background: #34495e; padding: 13px 15px; border-radius: 8px; margin-bottom: 10px; font-weight: 600; }
+        .menu-link:hover { background: #405c78; }
+        .menu-link.active { background: #2563eb; }
+        .user-box { margin-top: auto; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.15); }
+        .user-name { font-size: 14px; font-weight: 700; color: white; margin-bottom: 10px; word-break: break-word; }
+        .logout-form { margin: 0; }
+        .logout-button { width: 100%; border: none; background: #991b1b; color: white; padding: 10px 12px; border-radius: 8px; font-weight: 700; cursor: pointer; }
+        .logout-button:hover { background: #7f1d1d; }
+        .content { flex: 1; padding: 25px; overflow-x: auto; }
+        @@media (max-width: 900px) { .layout { flex-direction: column; } .sidebar { width: 100%; height: auto; position: static; overflow-y: visible; } .content { padding: 15px; } }
     </style>
 </head>
-
 <body>
     <div class="layout">
         <aside class="sidebar">
@@ -151,100 +50,56 @@
             <nav class="menu">
                 @if (HasPermission(PermissionCodes.DashboardView))
                 {
-                    <a class="menu-link @ActiveClass("Dashboard")"
-                       asp-controller="Dashboard"
-                       asp-action="Index">
-                        Dashboard
-                    </a>
+                    <a class="menu-link @ActiveClass("Dashboard")" asp-controller="Dashboard" asp-action="Index">Dashboard</a>
                 }
 
                 @if (HasPermission(PermissionCodes.BooksView))
                 {
-                    <a class="menu-link @ActiveClass("Books")"
-                       asp-controller="Books"
-                       asp-action="Index">
-                        Kitaplar
-                    </a>
+                    <a class="menu-link @ActiveClass("Books")" asp-controller="Books" asp-action="Index">Kitaplar</a>
                 }
 
                 @if (HasPermission(PermissionCodes.MembersView))
                 {
-                    <a class="menu-link @ActiveClass("Members")"
-                       asp-controller="Members"
-                       asp-action="Index">
-                        Üyeler
-                    </a>
+                    <a class="menu-link @ActiveClass("Members")" asp-controller="Members" asp-action="Index">Üyeler</a>
                 }
 
                 @if (HasPermission(PermissionCodes.LoansView))
                 {
-                    <a class="menu-link @ActiveClass("Loans")"
-                       asp-controller="Loans"
-                       asp-action="Index">
-                        Ödünç İşlemleri
-                    </a>
+                    <a class="menu-link @ActiveClass("Loans")" asp-controller="Loans" asp-action="Index">Ödünç İşlemleri</a>
                 }
 
                 @if (HasPermission(PermissionCodes.BookCopiesView))
                 {
-                    <a class="menu-link @ActiveClass("BookCopies")"
-                       asp-controller="BookCopies"
-                       asp-action="Index">
-                        Kitap Kopyaları
-                    </a>
+                    <a class="menu-link @ActiveClass("BookCopies")" asp-controller="BookCopies" asp-action="Index">Kitap Kopyaları</a>
                 }
 
                 @if (HasPermission(PermissionCodes.ReportsView))
                 {
-                    <a class="menu-link @ActiveClass("Reports")"
-                       asp-controller="Reports"
-                       asp-action="Index">
-                        Raporlar
-                    </a>
+                    <a class="menu-link @ActiveClass("Reports")" asp-controller="Reports" asp-action="Index">Raporlar</a>
                 }
 
                 @if (HasPermission(PermissionCodes.FormFieldsView))
                 {
-                    <a class="menu-link @ActiveClass("FormFields")"
-                       asp-controller="FormFields"
-                       asp-action="Index">
-                        Form Alanları
-                    </a>
+                    <a class="menu-link @ActiveClass("FormFields")" asp-controller="FormFields" asp-action="Index">Form Alanları</a>
                 }
 
                 @if (HasPermission(PermissionCodes.UsersView))
                 {
-                    <a class="menu-link @ActiveClass("Users")"
-                       asp-controller="Users"
-                       asp-action="Index">
-                        Kullanıcılar
-                    </a>
+                    <a class="menu-link @ActiveClass("Users")" asp-controller="Users" asp-action="Index">Kullanıcılar</a>
                 }
 
                 @if (HasPermission(PermissionCodes.PermissionsView))
                 {
-                    <a class="menu-link @ActiveClass("Permissions")"
-                       asp-controller="Permissions"
-                       asp-action="Index">
-                        Yetki Yönetimi
-                    </a>
+                    <a class="menu-link @ActiveClass("Permissions")" asp-controller="Permissions" asp-action="Index">Yetki Yönetimi</a>
                 }
             </nav>
 
             <div class="user-box">
-                <div class="user-name">
-                    @(User.FindFirst("AdSoyad")?.Value ?? User.Identity?.Name)
-                </div>
+                <div class="user-name">@(User.FindFirst("AdSoyad")?.Value ?? User.Identity?.Name)</div>
 
-                <form class="logout-form"
-                      method="post"
-                      asp-controller="Account"
-                      asp-action="Logout">
+                <form class="logout-form" method="post" asp-controller="Account" asp-action="Logout">
                     @Html.AntiForgeryToken()
-
-                    <button class="logout-button" type="submit">
-                        Çıkış
-                    </button>
+                    <button class="logout-button" type="submit">Çıkış</button>
                 </form>
             </div>
         </aside>

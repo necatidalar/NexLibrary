@@ -50,17 +50,10 @@ public sealed class PermissionsController : Controller
         if (matrix is null)
         {
             TempData["ErrorMessage"] = "Yetki matrisi alınamadı.";
-
-            return View(CreateEmptyViewModel(
-                roles,
-                selectedRole));
+            return View(CreateEmptyViewModel(roles, selectedRole));
         }
 
-        var model = CreateViewModel(
-            roles,
-            matrix);
-
-        return View(model);
+        return View(CreateViewModel(roles, matrix));
     }
 
     [HttpPost]
@@ -105,8 +98,7 @@ public sealed class PermissionsController : Controller
         return RedirectToAction(nameof(Index), new { rolId = model.SelectedRoleId });
     }
 
-    private async Task<List<RoleResponse>> GetRolesSafeAsync(
-        CancellationToken cancellationToken)
+    private async Task<List<RoleResponse>> GetRolesSafeAsync(CancellationToken cancellationToken)
     {
         try
         {
@@ -132,11 +124,7 @@ public sealed class PermissionsController : Controller
         }
         catch (Exception ex)
         {
-            _logger.LogError(
-                ex,
-                "Rol yetki matrisi alınırken hata oluştu. RolId: {RolId}",
-                roleId);
-
+            _logger.LogError(ex, "Rol yetki matrisi alınırken hata oluştu. RolId: {RolId}", roleId);
             return null;
         }
     }
@@ -155,11 +143,7 @@ public sealed class PermissionsController : Controller
         }
         catch (Exception ex)
         {
-            _logger.LogError(
-                ex,
-                "Rol yetkileri güncellenirken hata oluştu. RolId: {RolId}",
-                roleId);
-
+            _logger.LogError(ex, "Rol yetkileri güncellenirken hata oluştu. RolId: {RolId}", roleId);
             return null;
         }
     }

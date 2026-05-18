@@ -29,16 +29,18 @@ public static class PermissionCodes
     public const string ReportsExport = "Reports.Export";
 
     public const string FormFieldsView = "FormFields.View";
+    public const string FormFieldsCreate = "FormFields.Create";
     public const string FormFieldsEdit = "FormFields.Edit";
+    public const string FormFieldsManage = "FormFields.Manage";
 
     public const string UsersView = "Users.View";
     public const string UsersCreate = "Users.Create";
     public const string UsersEdit = "Users.Edit";
+    public const string UsersDelete = "Users.Delete";
     public const string UsersRoleManage = "Users.RoleManage";
 
     public const string PermissionsView = "Permissions.View";
     public const string PermissionsManage = "Permissions.Manage";
 
-    public const string FormFieldsCreate = "FormFields.Create";
-    public const string FormFieldsManage = "FormFields.Manage";
+    public const string AuditLogsView = "AuditLogs.View";
 }

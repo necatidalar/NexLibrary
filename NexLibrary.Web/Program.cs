@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Authentication.Cookies;
+﻿using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using NexLibrary.Web.Options;
@@ -40,7 +40,6 @@ builder.Services.AddHttpClient<DashboardApiService>(ConfigureApiClient);
 builder.Services.AddHttpClient<MemberApiService>(ConfigureApiClient);
 builder.Services.AddHttpClient<LoanApiService>(ConfigureApiClient);
 builder.Services.AddHttpClient<BookCopyApiService>(ConfigureApiClient);
-
 builder.Services.AddHttpClient<UserApiService>(ConfigureApiClient);
 builder.Services.AddHttpClient<AuthApiService>(ConfigureApiClient);
 builder.Services.AddHttpClient<PermissionApiService>(ConfigureApiClient);
@@ -50,6 +49,8 @@ builder.Services
     .AddCookie(options =>
     {
         options.Cookie.Name = "NexLibrary.Auth";
+        options.Cookie.HttpOnly = true;
+        options.Cookie.SameSite = SameSiteMode.Lax;
         options.LoginPath = "/Account/Login";
         options.LogoutPath = "/Account/Logout";
         options.AccessDeniedPath = "/Account/AccessDenied";

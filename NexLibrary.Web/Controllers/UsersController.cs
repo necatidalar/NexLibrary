@@ -36,11 +36,7 @@ public sealed class UsersController : Controller
 
         try
         {
-            users = await _userApiService.GetPagedAsync(
-                pageNumber,
-                pageSize,
-                search,
-                cancellationToken);
+            users = await _userApiService.GetPagedAsync(pageNumber, pageSize, search, cancellationToken);
         }
         catch (Exception ex)
         {
@@ -51,7 +47,6 @@ public sealed class UsersController : Controller
         if (users is null)
         {
             ViewBag.ErrorMessage = "API bağlantısı kurulamadı veya kullanıcı listesi alınamadı.";
-
             users = new PagedResponse<UserListResponse>
             {
                 Items = new List<UserListResponse>(),
@@ -95,7 +90,6 @@ public sealed class UsersController : Controller
         model.Roles = await GetRolesSafeAsync(cancellationToken);
 
         var validationMessage = ValidateCreateModel(model);
-
         if (validationMessage is not null)
         {
             TempData["ErrorMessage"] = validationMessage;
@@ -117,9 +111,7 @@ public sealed class UsersController : Controller
 
         try
         {
-            result = await _userApiService.CreateAsync(
-                request,
-                cancellationToken);
+            result = await _userApiService.CreateAsync(request, cancellationToken);
         }
         catch (Exception ex)
         {
@@ -134,15 +126,12 @@ public sealed class UsersController : Controller
         }
 
         TempData["SuccessMessage"] = "Kullanıcı başarıyla oluşturuldu.";
-
         return RedirectToAction(nameof(Index));
     }
 
     [HttpGet]
     [PermissionAuthorize(PermissionCodes.UsersEdit)]
-    public async Task<IActionResult> Edit(
-        int id,
-        CancellationToken cancellationToken = default)
+    public async Task<IActionResult> Edit(int id, CancellationToken cancellationToken = default)
     {
         var user = await GetUserSafeAsync(id, cancellationToken);
 
@@ -189,8 +178,7 @@ public sealed class UsersController : Controller
             return View(model);
         }
 
-        if (!string.IsNullOrWhiteSpace(model.YeniSifre) &&
-            model.YeniSifre.Length < 6)
+        if (!string.IsNullOrWhiteSpace(model.YeniSifre) && model.YeniSifre.Length < 6)
         {
             TempData["ErrorMessage"] = "Yeni şifre en az 6 karakter olmalıdır.";
             return View(model);
@@ -225,18 +213,11 @@ public sealed class UsersController : Controller
 
         try
         {
-            result = await _userApiService.UpdateAsync(
-                id,
-                request,
-                cancellationToken);
+            result = await _userApiService.UpdateAsync(id, request, cancellationToken);
         }
         catch (Exception ex)
         {
-            _logger.LogError(
-                ex,
-                "Kullanıcı güncellenirken hata oluştu. UserId: {UserId}",
-                id);
-
+            _logger.LogError(ex, "Kullanıcı güncellenirken hata oluştu. UserId: {UserId}", id);
             result = null;
         }
 
@@ -247,12 +228,10 @@ public sealed class UsersController : Controller
         }
 
         TempData["SuccessMessage"] = "Kullanıcı başarıyla güncellendi.";
-
         return RedirectToAction(nameof(Index));
     }
 
-    private async Task<List<RoleResponse>> GetRolesSafeAsync(
-        CancellationToken cancellationToken)
+    private async Task<List<RoleResponse>> GetRolesSafeAsync(CancellationToken cancellationToken)
     {
         try
         {
@@ -266,23 +245,15 @@ public sealed class UsersController : Controller
         }
     }
 
-    private async Task<UserDetailResponse?> GetUserSafeAsync(
-        int id,
-        CancellationToken cancellationToken)
+    private async Task<UserDetailResponse?> GetUserSafeAsync(int id, CancellationToken cancellationToken)
     {
         try
         {
-            return await _userApiService.GetByIdAsync(
-                id,
-                cancellationToken);
+            return await _userApiService.GetByIdAsync(id, cancellationToken);
         }
         catch (Exception ex)
         {
-            _logger.LogError(
-                ex,
-                "Kullanıcı detayı alınırken hata oluştu. UserId: {UserId}",
-                id);
-
+            _logger.LogError(ex, "Kullanıcı detayı alınırken hata oluştu. UserId: {UserId}", id);
             return null;
         }
     }
@@ -290,41 +261,20 @@ public sealed class UsersController : Controller
     private int GetCurrentUserId()
     {
         var claimValue = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-        return int.TryParse(claimValue, out var userId)
-            ? userId
-            : 0;
+        return int.TryParse(claimValue, out var userId) ? userId : 0;
     }
 
     private static string? ValidateCreateModel(UserCreateViewModel model)
     {
-        if (string.IsNullOrWhiteSpace(model.KullaniciAdi))
-        {
-            return "Kullanıcı adı zorunludur.";
-        }
-
-        if (string.IsNullOrWhiteSpace(model.AdSoyad))
-        {
-            return "Ad soyad zorunludur.";
-        }
-
-        if (string.IsNullOrWhiteSpace(model.Sifre) || model.Sifre.Length < 6)
-        {
-            return "Şifre en az 6 karakter olmalıdır.";
-        }
-
-        if (model.RolId <= 0)
-        {
-            return "Rol seçilmelidir.";
-        }
-
+        if (string.IsNullOrWhiteSpace(model.KullaniciAdi)) return "Kullanıcı adı zorunludur.";
+        if (string.IsNullOrWhiteSpace(model.AdSoyad)) return "Ad soyad zorunludur.";
+        if (string.IsNullOrWhiteSpace(model.Sifre) || model.Sifre.Length < 6) return "Şifre en az 6 karakter olmalıdır.";
+        if (model.RolId <= 0) return "Rol seçilmelidir.";
         return null;
     }
 
     private static string? NormalizeNullableText(string? value)
     {
-        return string.IsNullOrWhiteSpace(value)
-            ? null
-            : value.Trim();
+        return string.IsNullOrWhiteSpace(value) ? null : value.Trim();
     }
 }

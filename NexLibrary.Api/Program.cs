@@ -1,15 +1,12 @@
-using NexLibrary.Api.Middlewares;
+﻿using NexLibrary.Api.Middlewares;
 using NexLibrary.Application;
 using NexLibrary.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
-
 builder.Services.AddOpenApi();
-
 builder.Services.AddApplication();
-
 builder.Services.AddInfrastructure(builder.Configuration);
 
 builder.Services.AddAuthorization();
@@ -29,9 +26,10 @@ builder.Services.AddCors(options =>
                 .AllowAnyHeader()
                 .AllowAnyMethod();
         }
-        else
+        else if (builder.Environment.IsDevelopment())
         {
             policy
+                .AllowAnyOrigin()
                 .AllowAnyHeader()
                 .AllowAnyMethod();
         }
@@ -54,13 +52,11 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
 app.UseCors("NexLibraryCors");
 
-// JWT/Cookie authentication eklendiğinde burası aktif olacak.
+// Bir sonraki ana adımda JWT authentication eklenecek.
 // app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-
 app.Run();

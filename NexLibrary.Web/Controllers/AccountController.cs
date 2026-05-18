@@ -85,33 +85,7 @@ public sealed class AccountController : Controller
             return View(model);
         }
 
-        var claims = new List<Claim>
-        {
-            new Claim(ClaimTypes.NameIdentifier, loginResult.KullaniciId.ToString()),
-            new Claim(ClaimTypes.Name, loginResult.KullaniciAdi),
-            new Claim("AdSoyad", loginResult.AdSoyad)
-        };
-
-        if (!string.IsNullOrWhiteSpace(loginResult.Eposta))
-        {
-            claims.Add(new Claim(ClaimTypes.Email, loginResult.Eposta));
-        }
-
-        foreach (var role in loginResult.Roller ?? new List<string>())
-        {
-            claims.Add(new Claim(ClaimTypes.Role, role));
-        }
-
-        foreach (var permission in loginResult.Yetkiler ?? new List<string>())
-        {
-            claims.Add(new Claim(AppClaimTypes.Permission, permission));
-        }
-
-        var identity = new ClaimsIdentity(
-            claims,
-            CookieAuthenticationDefaults.AuthenticationScheme);
-
-        var principal = new ClaimsPrincipal(identity);
+        var principal = CreatePrincipal(loginResult);
 
         var authProperties = new AuthenticationProperties
         {
@@ -149,5 +123,36 @@ public sealed class AccountController : Controller
     public IActionResult AccessDenied()
     {
         return View();
+    }
+
+    private static ClaimsPrincipal CreatePrincipal(LoginResponse loginResult)
+    {
+        var claims = new List<Claim>
+        {
+            new Claim(ClaimTypes.NameIdentifier, loginResult.KullaniciId.ToString()),
+            new Claim(ClaimTypes.Name, loginResult.KullaniciAdi),
+            new Claim("AdSoyad", loginResult.AdSoyad)
+        };
+
+        if (!string.IsNullOrWhiteSpace(loginResult.Eposta))
+        {
+            claims.Add(new Claim(ClaimTypes.Email, loginResult.Eposta));
+        }
+
+        foreach (var role in loginResult.Roller ?? new List<string>())
+        {
+            claims.Add(new Claim(ClaimTypes.Role, role));
+        }
+
+        foreach (var permission in loginResult.Yetkiler ?? new List<string>())
+        {
+            claims.Add(new Claim(AppClaimTypes.Permission, permission));
+        }
+
+        var identity = new ClaimsIdentity(
+            claims,
+            CookieAuthenticationDefaults.AuthenticationScheme);
+
+        return new ClaimsPrincipal(identity);
     }
 }

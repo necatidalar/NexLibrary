@@ -32,9 +32,7 @@ public sealed class AuthController : ControllerBase
             return BadRequest("Şifre zorunludur.");
         }
 
-        var result = await _authService.LoginAsync(
-            request,
-            cancellationToken);
+        var result = await _authService.LoginAsync(request, cancellationToken);
 
         if (result is null)
         {
