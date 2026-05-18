@@ -90,7 +90,9 @@ public sealed class AccountController : Controller
         var authProperties = new AuthenticationProperties
         {
             IsPersistent = false,
-            ExpiresUtc = DateTimeOffset.UtcNow.AddHours(8)
+            ExpiresUtc = loginResult.ExpiresAt == default
+                ? DateTimeOffset.UtcNow.AddHours(8)
+                : loginResult.ExpiresAt
         };
 
         await HttpContext.SignInAsync(
@@ -133,6 +135,16 @@ public sealed class AccountController : Controller
             new Claim(ClaimTypes.Name, loginResult.KullaniciAdi),
             new Claim("AdSoyad", loginResult.AdSoyad)
         };
+
+        if (!string.IsNullOrWhiteSpace(loginResult.AccessToken))
+        {
+            claims.Add(new Claim("AccessToken", loginResult.AccessToken));
+        }
+
+        if (loginResult.ExpiresAt != default)
+        {
+            claims.Add(new Claim("AccessTokenExpiresAt", loginResult.ExpiresAt.ToString("O")));
+        }
 
         if (!string.IsNullOrWhiteSpace(loginResult.Eposta))
         {

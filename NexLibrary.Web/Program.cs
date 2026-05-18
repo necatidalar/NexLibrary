@@ -34,15 +34,34 @@ void ConfigureApiClient(HttpClient client)
     client.Timeout = TimeSpan.FromSeconds(30);
 }
 
-builder.Services.AddHttpClient<BookApiService>(ConfigureApiClient);
-builder.Services.AddHttpClient<FormFieldApiService>(ConfigureApiClient);
-builder.Services.AddHttpClient<DashboardApiService>(ConfigureApiClient);
-builder.Services.AddHttpClient<MemberApiService>(ConfigureApiClient);
-builder.Services.AddHttpClient<LoanApiService>(ConfigureApiClient);
-builder.Services.AddHttpClient<BookCopyApiService>(ConfigureApiClient);
-builder.Services.AddHttpClient<UserApiService>(ConfigureApiClient);
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddTransient<AuthTokenHandler>();
+
+builder.Services.AddHttpClient<BookApiService>(ConfigureApiClient)
+    .AddHttpMessageHandler<AuthTokenHandler>();
+
+builder.Services.AddHttpClient<FormFieldApiService>(ConfigureApiClient)
+    .AddHttpMessageHandler<AuthTokenHandler>();
+
+builder.Services.AddHttpClient<DashboardApiService>(ConfigureApiClient)
+    .AddHttpMessageHandler<AuthTokenHandler>();
+
+builder.Services.AddHttpClient<MemberApiService>(ConfigureApiClient)
+    .AddHttpMessageHandler<AuthTokenHandler>();
+
+builder.Services.AddHttpClient<LoanApiService>(ConfigureApiClient)
+    .AddHttpMessageHandler<AuthTokenHandler>();
+
+builder.Services.AddHttpClient<BookCopyApiService>(ConfigureApiClient)
+    .AddHttpMessageHandler<AuthTokenHandler>();
+
+builder.Services.AddHttpClient<UserApiService>(ConfigureApiClient)
+    .AddHttpMessageHandler<AuthTokenHandler>();
+
+builder.Services.AddHttpClient<PermissionApiService>(ConfigureApiClient)
+    .AddHttpMessageHandler<AuthTokenHandler>();
+
 builder.Services.AddHttpClient<AuthApiService>(ConfigureApiClient);
-builder.Services.AddHttpClient<PermissionApiService>(ConfigureApiClient);
 
 builder.Services
     .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)

@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using NexLibrary.Application.Interfaces.Services;
 using NexLibrary.Contracts.Auth;
+using NexLibrary.Contracts.Common;
 
 namespace NexLibrary.Api.Controllers;
 
@@ -24,19 +25,23 @@ public sealed class AuthController : ControllerBase
     {
         if (string.IsNullOrWhiteSpace(request.KullaniciAdi))
         {
-            return BadRequest("Kullanıcı adı zorunludur.");
+            return BadRequest(
+                ApiResponse<LoginResponse>.Fail("Kullanıcı adı zorunludur."));
         }
 
         if (string.IsNullOrWhiteSpace(request.Sifre))
         {
-            return BadRequest("Şifre zorunludur.");
+            return BadRequest(
+                ApiResponse<LoginResponse>.Fail("Şifre zorunludur."));
         }
 
-        var result = await _authService.LoginAsync(request, cancellationToken);
+        var result = await _authService.LoginAsync(
+            request,
+            cancellationToken);
 
-        if (result is null)
+        if (!result.BasariliMi)
         {
-            return Unauthorized("Kullanıcı adı veya şifre hatalı.");
+            return Unauthorized(result);
         }
 
         return Ok(result);
