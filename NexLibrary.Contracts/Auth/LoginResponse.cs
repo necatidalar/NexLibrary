@@ -12,6 +12,10 @@ public sealed class LoginResponse
 
     public string? Telefon { get; set; }
 
+    public string AccessToken { get; set; } = string.Empty;
+
+    public DateTimeOffset ExpiresAt { get; set; }
+
     public List<string> Roller { get; set; } = new();
 
     public List<string> Yetkiler { get; set; } = new();
