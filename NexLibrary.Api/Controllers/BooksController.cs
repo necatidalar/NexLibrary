@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using NexLibrary.Api.Security;
 using NexLibrary.Application.Interfaces.Services;
 using NexLibrary.Contracts.Books;
+using NexLibrary.Contracts.Permissions;
 
 namespace NexLibrary.Api.Controllers;
 
@@ -16,6 +18,7 @@ public sealed class BooksController : ControllerBase
     }
 
     [HttpGet]
+    [PermissionAuthorize(PermissionCodes.BooksView)]
     public async Task<IActionResult> GetPaged(
         [FromQuery] int pageNumber = 1,
         [FromQuery] int pageSize = 20,
@@ -32,6 +35,7 @@ public sealed class BooksController : ControllerBase
     }
 
     [HttpGet("{id:int}")]
+    [PermissionAuthorize(PermissionCodes.BooksView)]
     public async Task<IActionResult> GetById(
         int id,
         CancellationToken cancellationToken = default)
@@ -42,6 +46,7 @@ public sealed class BooksController : ControllerBase
     }
 
     [HttpPost]
+    [PermissionAuthorize(PermissionCodes.BooksCreate)]
     public async Task<IActionResult> Create(
         [FromBody] BookCreateRequest request,
         CancellationToken cancellationToken = default)
@@ -52,6 +57,7 @@ public sealed class BooksController : ControllerBase
     }
 
     [HttpPut("{id:int}")]
+    [PermissionAuthorize(PermissionCodes.BooksEdit)]
     public async Task<IActionResult> Update(
         int id,
         [FromBody] BookUpdateRequest request,
@@ -63,6 +69,7 @@ public sealed class BooksController : ControllerBase
     }
 
     [HttpDelete("{id:int}")]
+    [PermissionAuthorize(PermissionCodes.BooksDelete)]
     public async Task<IActionResult> Delete(
         int id,
         CancellationToken cancellationToken = default)

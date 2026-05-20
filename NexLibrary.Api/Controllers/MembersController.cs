@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using NexLibrary.Api.Security;
 using NexLibrary.Application.Interfaces.Services;
 using NexLibrary.Contracts.Members;
+using NexLibrary.Contracts.Permissions;
 
 namespace NexLibrary.Api.Controllers;
 
@@ -16,6 +18,7 @@ public sealed class MembersController : ControllerBase
     }
 
     [HttpGet]
+    [PermissionAuthorize(PermissionCodes.MembersView)]
     public async Task<IActionResult> GetPaged(
         [FromQuery] int pageNumber = 1,
         [FromQuery] int pageSize = 20,
@@ -32,6 +35,7 @@ public sealed class MembersController : ControllerBase
     }
 
     [HttpGet("{id:int}")]
+    [PermissionAuthorize(PermissionCodes.MembersView)]
     public async Task<IActionResult> GetById(
         int id,
         CancellationToken cancellationToken = default)
@@ -42,6 +46,7 @@ public sealed class MembersController : ControllerBase
     }
 
     [HttpPost]
+    [PermissionAuthorize(PermissionCodes.MembersCreate)]
     public async Task<IActionResult> Create(
         [FromBody] MemberCreateRequest request,
         CancellationToken cancellationToken = default)
@@ -52,6 +57,7 @@ public sealed class MembersController : ControllerBase
     }
 
     [HttpPut("{id:int}")]
+    [PermissionAuthorize(PermissionCodes.MembersEdit)]
     public async Task<IActionResult> Update(
         int id,
         [FromBody] MemberUpdateRequest request,
@@ -65,6 +71,7 @@ public sealed class MembersController : ControllerBase
     }
 
     [HttpDelete("{id:int}")]
+    [PermissionAuthorize(PermissionCodes.MembersDelete)]
     public async Task<IActionResult> Delete(
         int id,
         CancellationToken cancellationToken = default)

@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using NexLibrary.Api.Security;
 using NexLibrary.Application.Interfaces.Services;
+using NexLibrary.Contracts.Permissions;
 using NexLibrary.Contracts.Users;
 
 namespace NexLibrary.Api.Controllers;
@@ -16,6 +18,7 @@ public sealed class UsersController : ControllerBase
     }
 
     [HttpGet]
+    [PermissionAuthorize(PermissionCodes.UsersView)]
     public async Task<IActionResult> GetPaged(
         int pageNumber = 1,
         int pageSize = 20,
@@ -32,6 +35,7 @@ public sealed class UsersController : ControllerBase
     }
 
     [HttpGet("{id:int}")]
+    [PermissionAuthorize(PermissionCodes.UsersView)]
     public async Task<IActionResult> GetById(
         int id,
         CancellationToken cancellationToken = default)
@@ -44,6 +48,7 @@ public sealed class UsersController : ControllerBase
     }
 
     [HttpGet("roles")]
+    [PermissionAuthorize(PermissionCodes.UsersView)]
     public async Task<IActionResult> GetRoles(
         CancellationToken cancellationToken = default)
     {
@@ -53,6 +58,7 @@ public sealed class UsersController : ControllerBase
     }
 
     [HttpPost]
+    [PermissionAuthorize(PermissionCodes.UsersCreate)]
     public async Task<IActionResult> Create(
         UserCreateRequest request,
         CancellationToken cancellationToken = default)
@@ -65,6 +71,7 @@ public sealed class UsersController : ControllerBase
     }
 
     [HttpPut("{id:int}")]
+    [PermissionAuthorize(PermissionCodes.UsersEdit)]
     public async Task<IActionResult> Update(
         int id,
         UserUpdateRequest request,

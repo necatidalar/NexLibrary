@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using NexLibrary.Api.Security;
 using NexLibrary.Application.Interfaces.Services;
 using NexLibrary.Contracts.DynamicForms;
+using NexLibrary.Contracts.Permissions;
 
 namespace NexLibrary.Api.Controllers;
 
@@ -16,6 +18,7 @@ public sealed class FormFieldsController : ControllerBase
     }
 
     [HttpGet("design/{modulKodu}")]
+    [PermissionAuthorize(PermissionCodes.FormFieldsView)]
     public async Task<IActionResult> GetFormDesign(
         string modulKodu,
         CancellationToken cancellationToken = default)
@@ -28,6 +31,7 @@ public sealed class FormFieldsController : ControllerBase
     }
 
     [HttpGet("module/{modulKodu}")]
+    [PermissionAuthorize(PermissionCodes.FormFieldsView)]
     public async Task<IActionResult> GetByModule(
         string modulKodu,
         CancellationToken cancellationToken = default)
@@ -40,6 +44,7 @@ public sealed class FormFieldsController : ControllerBase
     }
 
     [HttpPost]
+    [PermissionAuthorize(PermissionCodes.FormFieldsCreate)]
     public async Task<IActionResult> Create(
         [FromBody] FormFieldCreateRequest request,
         CancellationToken cancellationToken = default)
@@ -50,6 +55,7 @@ public sealed class FormFieldsController : ControllerBase
     }
 
     [HttpPut("{id:int}")]
+    [PermissionAuthorize(PermissionCodes.FormFieldsEdit)]
     public async Task<IActionResult> Update(
         int id,
         [FromBody] FormFieldUpdateRequest request,
@@ -66,6 +72,7 @@ public sealed class FormFieldsController : ControllerBase
     }
 
     [HttpPatch("{id:int}/active")]
+    [PermissionAuthorize(PermissionCodes.FormFieldsManage)]
     public async Task<IActionResult> SetActive(
         int id,
         [FromQuery] bool aktifMi,

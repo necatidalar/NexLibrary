@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using NexLibrary.Api.Security;
 using NexLibrary.Application.Interfaces.Services;
+using NexLibrary.Contracts.Permissions;
 
 namespace NexLibrary.Api.Controllers;
 
@@ -15,7 +17,9 @@ public sealed class DashboardController : ControllerBase
     }
 
     [HttpGet("summary")]
-    public async Task<IActionResult> GetSummary(CancellationToken cancellationToken = default)
+    [PermissionAuthorize(PermissionCodes.DashboardView)]
+    public async Task<IActionResult> GetSummary(
+        CancellationToken cancellationToken = default)
     {
         var result = await _dashboardService.GetSummaryAsync(cancellationToken);
 

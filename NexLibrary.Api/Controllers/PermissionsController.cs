@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using NexLibrary.Api.Security;
 using NexLibrary.Application.Interfaces.Services;
 using NexLibrary.Contracts.Permissions;
 
@@ -16,6 +17,7 @@ public sealed class PermissionsController : ControllerBase
     }
 
     [HttpGet("user/{kullaniciId:int}")]
+    [PermissionAuthorize(PermissionCodes.PermissionsView)]
     public async Task<IActionResult> GetUserPermissions(
         int kullaniciId,
         CancellationToken cancellationToken = default)
@@ -28,6 +30,7 @@ public sealed class PermissionsController : ControllerBase
     }
 
     [HttpGet("roles/{rolId:int}/matrix")]
+    [PermissionAuthorize(PermissionCodes.PermissionsView)]
     public async Task<IActionResult> GetRolePermissionMatrix(
         int rolId,
         CancellationToken cancellationToken = default)
@@ -40,6 +43,7 @@ public sealed class PermissionsController : ControllerBase
     }
 
     [HttpPut("roles/{rolId:int}")]
+    [PermissionAuthorize(PermissionCodes.PermissionsManage)]
     public async Task<IActionResult> UpdateRolePermissions(
         int rolId,
         RolePermissionUpdateRequest request,

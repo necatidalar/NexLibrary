@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using NexLibrary.Api.Security;
 using NexLibrary.Application.Interfaces.Services;
 using NexLibrary.Contracts.Loans;
+using NexLibrary.Contracts.Permissions;
 
 namespace NexLibrary.Api.Controllers;
 
@@ -16,6 +18,7 @@ public sealed class LoansController : ControllerBase
     }
 
     [HttpGet]
+    [PermissionAuthorize(PermissionCodes.LoansView)]
     public async Task<IActionResult> GetPaged(
         [FromQuery] int pageNumber = 1,
         [FromQuery] int pageSize = 20,
@@ -32,6 +35,7 @@ public sealed class LoansController : ControllerBase
     }
 
     [HttpGet("overdue")]
+    [PermissionAuthorize(PermissionCodes.LoansView)]
     public async Task<IActionResult> GetOverdue(
         [FromQuery] int pageNumber = 1,
         [FromQuery] int pageSize = 20,
@@ -46,6 +50,7 @@ public sealed class LoansController : ControllerBase
     }
 
     [HttpGet("{id:int}")]
+    [PermissionAuthorize(PermissionCodes.LoansView)]
     public async Task<IActionResult> GetById(
         int id,
         CancellationToken cancellationToken = default)
@@ -56,6 +61,7 @@ public sealed class LoansController : ControllerBase
     }
 
     [HttpPost]
+    [PermissionAuthorize(PermissionCodes.LoansCreate)]
     public async Task<IActionResult> Create(
         [FromBody] LoanCreateRequest request,
         CancellationToken cancellationToken = default)
@@ -66,6 +72,7 @@ public sealed class LoansController : ControllerBase
     }
 
     [HttpPatch("{id:int}/return")]
+    [PermissionAuthorize(PermissionCodes.LoansReturn)]
     public async Task<IActionResult> Return(
         int id,
         [FromBody] LoanReturnRequest request,
@@ -80,6 +87,7 @@ public sealed class LoansController : ControllerBase
     }
 
     [HttpPatch("{id:int}/cancel")]
+    [PermissionAuthorize(PermissionCodes.LoansCancel)]
     public async Task<IActionResult> Cancel(
         int id,
         CancellationToken cancellationToken = default)
@@ -90,7 +98,9 @@ public sealed class LoansController : ControllerBase
     }
 
     [HttpPatch("mark-overdue")]
-    public async Task<IActionResult> MarkOverdue(CancellationToken cancellationToken = default)
+    [PermissionAuthorize(PermissionCodes.LoansView)]
+    public async Task<IActionResult> MarkOverdue(
+        CancellationToken cancellationToken = default)
     {
         var result = await _loanService.MarkOverdueAsync(cancellationToken);
 

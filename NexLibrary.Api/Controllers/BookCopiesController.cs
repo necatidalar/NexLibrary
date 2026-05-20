@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using NexLibrary.Api.Security;
 using NexLibrary.Application.Interfaces.Services;
 using NexLibrary.Contracts.BookCopies;
+using NexLibrary.Contracts.Permissions;
 
 namespace NexLibrary.Api.Controllers;
 
@@ -16,27 +18,35 @@ public sealed class BookCopiesController : ControllerBase
     }
 
     [HttpGet("book/{kitapId:int}")]
+    [PermissionAuthorize(PermissionCodes.BookCopiesView)]
     public async Task<IActionResult> GetByBookId(
         int kitapId,
         CancellationToken cancellationToken = default)
     {
-        var result = await _bookCopyService.GetByBookIdAsync(kitapId, cancellationToken);
+        var result = await _bookCopyService.GetByBookIdAsync(
+            kitapId,
+            cancellationToken);
 
         return result.BasariliMi ? Ok(result) : BadRequest(result);
     }
 
     [HttpGet("book/{kitapId:int}/available")]
+    [PermissionAuthorize(PermissionCodes.BookCopiesView)]
     public async Task<IActionResult> GetAvailableByBookId(
         int kitapId,
         CancellationToken cancellationToken = default)
     {
-        var result = await _bookCopyService.GetAvailableByBookIdAsync(kitapId, cancellationToken);
+        var result = await _bookCopyService.GetAvailableByBookIdAsync(
+            kitapId,
+            cancellationToken);
 
         return result.BasariliMi ? Ok(result) : BadRequest(result);
     }
 
     [HttpGet("stock-summary")]
-    public async Task<IActionResult> GetStockSummary(CancellationToken cancellationToken = default)
+    [PermissionAuthorize(PermissionCodes.BookCopiesView)]
+    public async Task<IActionResult> GetStockSummary(
+        CancellationToken cancellationToken = default)
     {
         var result = await _bookCopyService.GetStockSummaryAsync(cancellationToken);
 
@@ -44,6 +54,7 @@ public sealed class BookCopiesController : ControllerBase
     }
 
     [HttpPost]
+    [PermissionAuthorize(PermissionCodes.BookCopiesCreate)]
     public async Task<IActionResult> Create(
         [FromBody] BookCopyCreateRequest request,
         CancellationToken cancellationToken = default)
