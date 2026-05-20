@@ -7,6 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using NexLibrary.Application.Interfaces.Repositories;
 using NexLibrary.Application.Interfaces.Services;
+using NexLibrary.Contracts.Audit;
 using NexLibrary.Contracts.Auth;
 using NexLibrary.Contracts.Common;
 using NexLibrary.Contracts.Permissions;
@@ -17,13 +18,16 @@ public sealed class AuthService : IAuthService
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IConfiguration _configuration;
+    private readonly IAuditLogService _auditLogService;
 
     public AuthService(
         IUnitOfWork unitOfWork,
-        IConfiguration configuration)
+        IConfiguration configuration,
+        IAuditLogService auditLogService)
     {
         _unitOfWork = unitOfWork;
         _configuration = configuration;
+        _auditLogService = auditLogService;
     }
 
     public async Task<ApiResponse<LoginResponse>> LoginAsync(
@@ -32,11 +36,37 @@ public sealed class AuthService : IAuthService
     {
         if (string.IsNullOrWhiteSpace(request.KullaniciAdi))
         {
+            await LogAuditSafeAsync(
+                AuditActionTypes.UserLoginFailed,
+                "Kullanicilar",
+                kayitId: null,
+                yeniDeger: new
+                {
+                    KullaniciAdi = request.KullaniciAdi,
+                    Sebep = "Kullanıcı adı boş"
+                },
+                aciklama: "Kullanıcı girişi başarısız: kullanıcı adı boş.",
+                kullaniciId: null,
+                cancellationToken);
+
             return ApiResponse<LoginResponse>.Fail("Kullanıcı adı zorunludur.");
         }
 
         if (string.IsNullOrWhiteSpace(request.Sifre))
         {
+            await LogAuditSafeAsync(
+                AuditActionTypes.UserLoginFailed,
+                "Kullanicilar",
+                kayitId: null,
+                yeniDeger: new
+                {
+                    KullaniciAdi = request.KullaniciAdi,
+                    Sebep = "Şifre boş"
+                },
+                aciklama: "Kullanıcı girişi başarısız: şifre boş.",
+                kullaniciId: null,
+                cancellationToken);
+
             return ApiResponse<LoginResponse>.Fail("Şifre zorunludur.");
         }
 
@@ -54,17 +84,56 @@ public sealed class AuthService : IAuthService
 
         if (user is null)
         {
+            await LogAuditSafeAsync(
+                AuditActionTypes.UserLoginFailed,
+                "Kullanicilar",
+                kayitId: null,
+                yeniDeger: new
+                {
+                    KullaniciAdi = kullaniciAdi,
+                    Sebep = "Kullanıcı bulunamadı"
+                },
+                aciklama: "Kullanıcı girişi başarısız: kullanıcı bulunamadı.",
+                kullaniciId: null,
+                cancellationToken);
+
             return ApiResponse<LoginResponse>.Fail("Kullanıcı adı veya şifre hatalı.");
         }
 
         if (!user.AktifMi)
         {
+            await LogAuditSafeAsync(
+                AuditActionTypes.UserLoginFailed,
+                "Kullanicilar",
+                kayitId: user.Id,
+                yeniDeger: new
+                {
+                    user.KullaniciAdi,
+                    Sebep = "Kullanıcı pasif"
+                },
+                aciklama: "Kullanıcı girişi başarısız: kullanıcı pasif.",
+                kullaniciId: user.Id,
+                cancellationToken);
+
             return ApiResponse<LoginResponse>.Fail("Bu kullanıcı pasif durumdadır.");
         }
 
         if (string.IsNullOrWhiteSpace(user.SifreHash) ||
             string.IsNullOrWhiteSpace(user.SifreSalt))
         {
+            await LogAuditSafeAsync(
+                AuditActionTypes.UserLoginFailed,
+                "Kullanicilar",
+                kayitId: user.Id,
+                yeniDeger: new
+                {
+                    user.KullaniciAdi,
+                    Sebep = "Şifre bilgisi eksik"
+                },
+                aciklama: "Kullanıcı girişi başarısız: şifre bilgisi eksik.",
+                kullaniciId: user.Id,
+                cancellationToken);
+
             return ApiResponse<LoginResponse>.Fail("Kullanıcı şifre bilgisi eksik.");
         }
 
@@ -75,6 +144,19 @@ public sealed class AuthService : IAuthService
 
         if (!passwordValid)
         {
+            await LogAuditSafeAsync(
+                AuditActionTypes.UserLoginFailed,
+                "Kullanicilar",
+                kayitId: user.Id,
+                yeniDeger: new
+                {
+                    user.KullaniciAdi,
+                    Sebep = "Şifre hatalı"
+                },
+                aciklama: "Kullanıcı girişi başarısız: şifre hatalı.",
+                kullaniciId: user.Id,
+                cancellationToken);
+
             return ApiResponse<LoginResponse>.Fail("Kullanıcı adı veya şifre hatalı.");
         }
 
@@ -87,6 +169,19 @@ public sealed class AuthService : IAuthService
 
         if (roleCodes.Count == 0)
         {
+            await LogAuditSafeAsync(
+                AuditActionTypes.UserLoginFailed,
+                "Kullanicilar",
+                kayitId: user.Id,
+                yeniDeger: new
+                {
+                    user.KullaniciAdi,
+                    Sebep = "Aktif rol bulunamadı"
+                },
+                aciklama: "Kullanıcı girişi başarısız: aktif rol bulunamadı.",
+                kullaniciId: user.Id,
+                cancellationToken);
+
             return ApiResponse<LoginResponse>.Fail("Kullanıcıya atanmış aktif rol bulunamadı.");
         }
 
@@ -116,6 +211,22 @@ public sealed class AuthService : IAuthService
         _unitOfWork.Kullanicilar.Update(user);
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        await LogAuditSafeAsync(
+            AuditActionTypes.UserLoginSuccess,
+            "Kullanicilar",
+            kayitId: user.Id,
+            yeniDeger: new
+            {
+                user.KullaniciAdi,
+                user.AdSoyad,
+                Roller = roleCodes,
+                YetkiSayisi = permissionCodes.Count,
+                ExpiresAt = expiresAt
+            },
+            aciklama: "Kullanıcı başarıyla giriş yaptı.",
+            kullaniciId: user.Id,
+            cancellationToken);
 
         var response = new LoginResponse
         {
@@ -155,7 +266,8 @@ public sealed class AuthService : IAuthService
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             new(ClaimTypes.NameIdentifier, userId.ToString()),
             new(ClaimTypes.Name, kullaniciAdi),
-            new("AdSoyad", adSoyad)
+            new("AdSoyad", adSoyad),
+            new("token_type", "user")
         };
 
         if (!string.IsNullOrWhiteSpace(eposta))
@@ -223,17 +335,45 @@ public sealed class AuthService : IAuthService
     {
         var saltBytes = Convert.FromBase64String(storedSalt);
 
-        var enteredHashBytes = Rfc2898DeriveBytes.Pbkdf2(
+        using var pbkdf2 = new Rfc2898DeriveBytes(
             password,
             saltBytes,
             100_000,
-            HashAlgorithmName.SHA256,
-            32);
+            HashAlgorithmName.SHA256);
 
+        var enteredHashBytes = pbkdf2.GetBytes(32);
         var storedHashBytes = Convert.FromBase64String(storedHash);
 
         return CryptographicOperations.FixedTimeEquals(
             storedHashBytes,
             enteredHashBytes);
+    }
+
+    private async Task LogAuditSafeAsync(
+        string islemTuru,
+        string tabloAdi,
+        int? kayitId,
+        object? yeniDeger,
+        string? aciklama,
+        int? kullaniciId,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            await _auditLogService.LogAsync(
+                islemTuru,
+                tabloAdi,
+                kayitId,
+                eskiDeger: null,
+                yeniDeger: yeniDeger,
+                aciklama: aciklama,
+                kullaniciId: kullaniciId,
+                ipAdresi: null,
+                cancellationToken);
+        }
+        catch
+        {
+            // Audit log hatası login akışını bozmasın.
+        }
     }
 }

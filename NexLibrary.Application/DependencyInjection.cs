@@ -18,6 +18,8 @@ public static class DependencyInjection
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IPermissionService, PermissionService>();
         services.AddScoped<IApiClientAuthService, ApiClientAuthService>();
+        services.AddScoped<IAuditLogService, AuditLogService>();
+        services.AddScoped<ICurrentRequestInfoService, NullCurrentRequestInfoService>();
 
         return services;
     }

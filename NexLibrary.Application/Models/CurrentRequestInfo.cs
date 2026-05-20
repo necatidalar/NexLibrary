@@ -1,23 +1,7 @@
-﻿using NexLibrary.Domain.Common;
+﻿namespace NexLibrary.Application.Models;
 
-namespace NexLibrary.Domain.Entities;
-
-public sealed class AuditLog : BaseEntity
+public sealed class CurrentRequestInfo
 {
-    public string IslemTuru { get; set; } = string.Empty;
-
-    public string TabloAdi { get; set; } = string.Empty;
-
-    public int? KayitId { get; set; }
-
-    public string? EskiDegerJson { get; set; }
-
-    public string? YeniDegerJson { get; set; }
-
-    public string? Aciklama { get; set; }
-
-    public int? KullaniciId { get; set; }
-
     public string? IpAdresi { get; set; }
 
     public string? UserAgent { get; set; }

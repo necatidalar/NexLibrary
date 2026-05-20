@@ -39,6 +39,39 @@ public sealed class AuditLogConfiguration : IEntityTypeConfiguration<AuditLog>
         builder.Property(x => x.IpAdresi)
             .HasMaxLength(100);
 
+        builder.Property(x => x.UserAgent)
+            .HasMaxLength(1000);
+
+        builder.Property(x => x.MacAdresi)
+            .HasMaxLength(100);
+
+        builder.Property(x => x.CihazBilgisi)
+            .HasMaxLength(250);
+
+        builder.Property(x => x.TarayiciBilgisi)
+            .HasMaxLength(500);
+
+        builder.Property(x => x.IsletimSistemi)
+            .HasMaxLength(250);
+
+        builder.Property(x => x.Dil)
+            .HasMaxLength(250);
+
+        builder.Property(x => x.Referer)
+            .HasMaxLength(1000);
+
+        builder.Property(x => x.Host)
+            .HasMaxLength(250);
+
+        builder.Property(x => x.HttpMethod)
+            .HasMaxLength(20);
+
+        builder.Property(x => x.RequestPath)
+            .HasMaxLength(1000);
+
+        builder.Property(x => x.HeaderJson)
+            .HasColumnType("nvarchar(max)");
+
         builder.Property(x => x.AktifMi)
             .IsRequired();
 
@@ -56,6 +89,10 @@ public sealed class AuditLogConfiguration : IEntityTypeConfiguration<AuditLog>
         builder.HasIndex(x => x.KayitId);
 
         builder.HasIndex(x => x.KullaniciId);
+
+        builder.HasIndex(x => x.IpAdresi);
+
+        builder.HasIndex(x => x.IslemTuru);
 
         builder.HasIndex(x => x.OlusturmaTarihi);
     }

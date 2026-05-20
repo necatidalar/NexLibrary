@@ -7,6 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using NexLibrary.Application.Interfaces.Repositories;
 using NexLibrary.Application.Interfaces.Services;
+using NexLibrary.Contracts.Audit;
 using NexLibrary.Contracts.Auth;
 using NexLibrary.Contracts.Common;
 using NexLibrary.Contracts.Permissions;
@@ -17,13 +18,16 @@ public sealed class ApiClientAuthService : IApiClientAuthService
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IConfiguration _configuration;
+    private readonly IAuditLogService _auditLogService;
 
     public ApiClientAuthService(
         IUnitOfWork unitOfWork,
-        IConfiguration configuration)
+        IConfiguration configuration,
+        IAuditLogService auditLogService)
     {
         _unitOfWork = unitOfWork;
         _configuration = configuration;
+        _auditLogService = auditLogService;
     }
 
     public async Task<ApiResponse<ApiClientTokenResponse>> CreateTokenAsync(
@@ -32,11 +36,35 @@ public sealed class ApiClientAuthService : IApiClientAuthService
     {
         if (string.IsNullOrWhiteSpace(request.ClientId))
         {
+            await LogAuditSafeAsync(
+                AuditActionTypes.ApiClientTokenFailed,
+                "ApiClients",
+                kayitId: null,
+                yeniDeger: new
+                {
+                    ClientId = request.ClientId,
+                    Sebep = "ClientId boş"
+                },
+                aciklama: "API client token oluşturma başarısız: ClientId boş.",
+                cancellationToken);
+
             return ApiResponse<ApiClientTokenResponse>.Fail("ClientId zorunludur.");
         }
 
         if (string.IsNullOrWhiteSpace(request.ClientSecret))
         {
+            await LogAuditSafeAsync(
+                AuditActionTypes.ApiClientTokenFailed,
+                "ApiClients",
+                kayitId: null,
+                yeniDeger: new
+                {
+                    ClientId = request.ClientId,
+                    Sebep = "ClientSecret boş"
+                },
+                aciklama: "API client token oluşturma başarısız: ClientSecret boş.",
+                cancellationToken);
+
             return ApiResponse<ApiClientTokenResponse>.Fail("ClientSecret zorunludur.");
         }
 
@@ -52,17 +80,53 @@ public sealed class ApiClientAuthService : IApiClientAuthService
 
         if (apiClient is null)
         {
+            await LogAuditSafeAsync(
+                AuditActionTypes.ApiClientTokenFailed,
+                "ApiClients",
+                kayitId: null,
+                yeniDeger: new
+                {
+                    ClientId = clientId,
+                    Sebep = "Client bulunamadı"
+                },
+                aciklama: "API client token oluşturma başarısız: client bulunamadı.",
+                cancellationToken);
+
             return ApiResponse<ApiClientTokenResponse>.Fail("API client bilgileri hatalı.");
         }
 
         if (!apiClient.AktifMi)
         {
+            await LogAuditSafeAsync(
+                AuditActionTypes.ApiClientTokenFailed,
+                "ApiClients",
+                kayitId: apiClient.Id,
+                yeniDeger: new
+                {
+                    apiClient.ClientId,
+                    Sebep = "Client pasif"
+                },
+                aciklama: "API client token oluşturma başarısız: client pasif.",
+                cancellationToken);
+
             return ApiResponse<ApiClientTokenResponse>.Fail("API client pasif durumdadır.");
         }
 
         if (string.IsNullOrWhiteSpace(apiClient.ClientSecretHash) ||
             string.IsNullOrWhiteSpace(apiClient.ClientSecretSalt))
         {
+            await LogAuditSafeAsync(
+                AuditActionTypes.ApiClientTokenFailed,
+                "ApiClients",
+                kayitId: apiClient.Id,
+                yeniDeger: new
+                {
+                    apiClient.ClientId,
+                    Sebep = "Client secret bilgisi eksik"
+                },
+                aciklama: "API client token oluşturma başarısız: secret bilgisi eksik.",
+                cancellationToken);
+
             return ApiResponse<ApiClientTokenResponse>.Fail("API client secret bilgisi eksik.");
         }
 
@@ -73,6 +137,18 @@ public sealed class ApiClientAuthService : IApiClientAuthService
 
         if (!secretValid)
         {
+            await LogAuditSafeAsync(
+                AuditActionTypes.ApiClientTokenFailed,
+                "ApiClients",
+                kayitId: apiClient.Id,
+                yeniDeger: new
+                {
+                    apiClient.ClientId,
+                    Sebep = "Client secret hatalı"
+                },
+                aciklama: "API client token oluşturma başarısız: secret hatalı.",
+                cancellationToken);
+
             return ApiResponse<ApiClientTokenResponse>.Fail("API client bilgileri hatalı.");
         }
 
@@ -85,6 +161,18 @@ public sealed class ApiClientAuthService : IApiClientAuthService
 
         if (permissionCodes.Count == 0)
         {
+            await LogAuditSafeAsync(
+                AuditActionTypes.ApiClientTokenFailed,
+                "ApiClients",
+                kayitId: apiClient.Id,
+                yeniDeger: new
+                {
+                    apiClient.ClientId,
+                    Sebep = "Aktif yetki bulunamadı"
+                },
+                aciklama: "API client token oluşturma başarısız: aktif yetki bulunamadı.",
+                cancellationToken);
+
             return ApiResponse<ApiClientTokenResponse>.Fail("API client için aktif yetki bulunamadı.");
         }
 
@@ -103,6 +191,20 @@ public sealed class ApiClientAuthService : IApiClientAuthService
         _unitOfWork.ApiClients.Update(apiClient);
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        await LogAuditSafeAsync(
+            AuditActionTypes.ApiClientTokenSuccess,
+            "ApiClients",
+            kayitId: apiClient.Id,
+            yeniDeger: new
+            {
+                apiClient.ClientId,
+                apiClient.ClientName,
+                YetkiSayisi = permissionCodes.Count,
+                ExpiresAt = expiresAt
+            },
+            aciklama: "API client token başarıyla oluşturuldu.",
+            cancellationToken);
 
         var response = new ApiClientTokenResponse
         {
@@ -197,17 +299,44 @@ public sealed class ApiClientAuthService : IApiClientAuthService
     {
         var saltBytes = Convert.FromBase64String(storedSalt);
 
-        var enteredHashBytes = Rfc2898DeriveBytes.Pbkdf2(
+        using var pbkdf2 = new Rfc2898DeriveBytes(
             clientSecret,
             saltBytes,
             100_000,
-            HashAlgorithmName.SHA256,
-            32);
+            HashAlgorithmName.SHA256);
 
+        var enteredHashBytes = pbkdf2.GetBytes(32);
         var storedHashBytes = Convert.FromBase64String(storedHash);
 
         return CryptographicOperations.FixedTimeEquals(
             storedHashBytes,
             enteredHashBytes);
+    }
+
+    private async Task LogAuditSafeAsync(
+        string islemTuru,
+        string tabloAdi,
+        int? kayitId,
+        object? yeniDeger,
+        string? aciklama,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            await _auditLogService.LogAsync(
+                islemTuru,
+                tabloAdi,
+                kayitId,
+                eskiDeger: null,
+                yeniDeger: yeniDeger,
+                aciklama: aciklama,
+                kullaniciId: null,
+                ipAdresi: null,
+                cancellationToken);
+        }
+        catch
+        {
+            // Audit log hatası token üretim akışını bozmasın.
+        }
     }
 }

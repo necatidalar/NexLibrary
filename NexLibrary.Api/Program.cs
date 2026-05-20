@@ -7,6 +7,9 @@ using NexLibrary.Api.Middlewares;
 using NexLibrary.Api.OpenApi;
 using NexLibrary.Application;
 using NexLibrary.Infrastructure;
+using Microsoft.AspNetCore.HttpOverrides;
+using NexLibrary.Api.Services;
+using NexLibrary.Application.Interfaces.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,6 +30,17 @@ builder.Services.AddOpenApi(options =>
 builder.Services.AddApplication();
 
 builder.Services.AddInfrastructure(builder.Configuration);
+
+builder.Services.AddHttpContextAccessor();
+
+builder.Services.AddScoped<ICurrentRequestInfoService, HttpCurrentRequestInfoService>();
+
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders =
+        ForwardedHeaders.XForwardedFor |
+        ForwardedHeaders.XForwardedProto;
+});
 
 var jwtIssuer = builder.Configuration["Jwt:Issuer"];
 var jwtAudience = builder.Configuration["Jwt:Audience"];
@@ -99,7 +113,7 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
-
+app.UseForwardedHeaders();
 app.UseMiddleware<ExceptionMiddleware>();
 
 if (app.Environment.IsDevelopment())
