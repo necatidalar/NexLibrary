@@ -6,7 +6,8 @@ namespace NexLibrary.Infrastructure.Persistence;
 
 public sealed class NexLibraryDbContext : DbContext
 {
-    public NexLibraryDbContext(DbContextOptions<NexLibraryDbContext> options) : base(options)
+    public NexLibraryDbContext(DbContextOptions options)
+        : base(options)
     {
     }
 
@@ -33,6 +34,10 @@ public sealed class NexLibraryDbContext : DbContext
     public DbSet<RolYetki> RolYetkileri => Set<RolYetki>();
 
     public DbSet<AuditLog> AuditLoglari => Set<AuditLog>();
+
+    public DbSet<ApiClient> ApiClients => Set<ApiClient>();
+
+    public DbSet<ApiClientYetki> ApiClientYetkileri => Set<ApiClientYetki>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

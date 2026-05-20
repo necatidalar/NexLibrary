@@ -17,4 +17,6 @@ public sealed class YetkiTanimi : BaseEntity
     public int SiraNo { get; set; }
 
     public ICollection<RolYetki> RolYetkileri { get; set; } = new List<RolYetki>();
+
+    public ICollection<ApiClientYetki> ApiClientYetkileri { get; set; } = new List<ApiClientYetki>();
 }

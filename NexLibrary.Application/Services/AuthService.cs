@@ -124,10 +124,10 @@ public sealed class AuthService : IAuthService
             AdSoyad = user.AdSoyad,
             Eposta = user.Eposta,
             Telefon = user.Telefon,
-            Roller = roleCodes,
-            Yetkiler = permissionCodes,
             AccessToken = accessToken,
-            ExpiresAt = expiresAt
+            ExpiresAt = expiresAt,
+            Roller = roleCodes,
+            Yetkiler = permissionCodes
         };
 
         return ApiResponse<LoginResponse>.Success(

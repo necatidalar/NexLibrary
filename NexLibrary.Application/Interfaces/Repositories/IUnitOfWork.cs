@@ -28,7 +28,6 @@ public interface IUnitOfWork : IDisposable
 
     IGenericRepository<AuditLog> AuditLoglari { get; }
 
-
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 
     Task ExecuteInTransactionAsync(
