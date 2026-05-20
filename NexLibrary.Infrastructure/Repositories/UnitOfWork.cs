@@ -15,6 +15,10 @@ public sealed class UnitOfWork : IUnitOfWork
 
     public IGenericRepository<RolYetki> RolYetkileri { get; }
 
+    public IGenericRepository<ApiClient> ApiClients { get; }
+
+    public IGenericRepository<ApiClientYetki> ApiClientYetkileri { get; }
+
     public UnitOfWork(NexLibraryDbContext context)
     {
         _context = context;
@@ -31,6 +35,8 @@ public sealed class UnitOfWork : IUnitOfWork
         Oduncler = new GenericRepository<Odunc>(_context);
         YetkiTanimlari = new GenericRepository<YetkiTanimi>(_context);
         RolYetkileri = new GenericRepository<RolYetki>(_context);
+        ApiClients = new GenericRepository<ApiClient>(_context);
+        ApiClientYetkileri = new GenericRepository<ApiClientYetki>(_context);
     }
 
     public IGenericRepository<Kitap> Kitaplar { get; }

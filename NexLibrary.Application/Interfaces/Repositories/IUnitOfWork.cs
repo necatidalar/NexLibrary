@@ -28,6 +28,10 @@ public interface IUnitOfWork : IDisposable
 
     IGenericRepository<AuditLog> AuditLoglari { get; }
 
+    IGenericRepository<ApiClient> ApiClients { get; }
+
+    IGenericRepository<ApiClientYetki> ApiClientYetkileri { get; }
+
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 
     Task ExecuteInTransactionAsync(

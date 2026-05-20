@@ -11,10 +11,14 @@ namespace NexLibrary.Api.Controllers;
 public sealed class AuthController : ControllerBase
 {
     private readonly IAuthService _authService;
+    private readonly IApiClientAuthService _apiClientAuthService;
 
-    public AuthController(IAuthService authService)
+    public AuthController(
+        IAuthService authService,
+        IApiClientAuthService apiClientAuthService)
     {
         _authService = authService;
+        _apiClientAuthService = apiClientAuthService;
     }
 
     [AllowAnonymous]
@@ -36,6 +40,36 @@ public sealed class AuthController : ControllerBase
         }
 
         var result = await _authService.LoginAsync(
+            request,
+            cancellationToken);
+
+        if (!result.BasariliMi)
+        {
+            return Unauthorized(result);
+        }
+
+        return Ok(result);
+    }
+
+    [AllowAnonymous]
+    [HttpPost("client-token")]
+    public async Task<IActionResult> CreateClientToken(
+        ApiClientTokenRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(request.ClientId))
+        {
+            return BadRequest(
+                ApiResponse<ApiClientTokenResponse>.Fail("ClientId zorunludur."));
+        }
+
+        if (string.IsNullOrWhiteSpace(request.ClientSecret))
+        {
+            return BadRequest(
+                ApiResponse<ApiClientTokenResponse>.Fail("ClientSecret zorunludur."));
+        }
+
+        var result = await _apiClientAuthService.CreateTokenAsync(
             request,
             cancellationToken);
 
